@@ -23,6 +23,7 @@
     "drive/guardar_texto.php",
     "drive/index.php",
     "drive/leer_texto.php",
+    "drive/login-error.php",
     "drive/login.php",
     "drive/logout.php",
     "drive/node-status.php",
@@ -36,6 +37,10 @@
     "drive/setup/index.php",
     "drive/so.php",
     "drive/src/Admin/ManagedRuntimeEnvironment.php",
+    "drive/src/Http/Controller/LoginErrorController.php",
+    "drive/src/Security/LoginPageGuard.php",
+    "drive/src/Security/LoginRateLimiter.php",
+    "drive/src/Security/SessionManager.php",
     "drive/src/Setup/BootstrapSetupAuth.php",
     "drive/src/Setup/SetupEntryGuard.php",
     "drive/thumb.php",
@@ -66,6 +71,12 @@
       ]
     },
     {
+      "path": "drive/api/native.php",
+      "size": 269,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/api/upload.php",
       "size": 264,
       "active": true,
@@ -73,8 +84,10 @@
         "drive/dataword3d.php",
         "drive/s3.php",
         "drive/so.php",
+        "drive/tests/mobile_capture_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/js/dataword3d.js",
+        "drive/js/mobile-capture.js",
         "drive/js/so-screenshot-paste.js",
         "drive/js/soportesMediaTypes.js",
         "drive/js/subir-chunked.js",
@@ -90,6 +103,7 @@
       "references": [
         "drive/activity_costs.php",
         "drive/actualizar_ruta.php",
+        "drive/api/native.php",
         "drive/api/upload.php",
         "drive/background_tasks.php",
         "drive/bin/activity_retention.php",
@@ -110,6 +124,7 @@
         "drive/bin/sync_worker.php",
         "drive/bin/transcribe_reconcile.php",
         "drive/bin/upload_cleanup.php",
+        "drive/bin/upload_task_reconcile.php",
         "drive/bloque_archivos.php",
         "drive/bloque_carpetas.php",
         "drive/buscar_archivo.php",
@@ -177,12 +192,15 @@
         "drive/folder-suggestions.php",
         "drive/generar_token.php",
         "drive/guardar_texto.php",
+        "drive/image-rotate.php",
         "drive/leer_texto.php",
         "drive/listar_carpetas.php",
         "drive/logout.php",
         "drive/media_playlist.php",
         "drive/media_processing.php",
         "drive/migrations/20260930_add_users_os_preferences.php",
+        "drive/mobile-capture-upload.php",
+        "drive/mobile_capture.php",
         "drive/move_multiple.php",
         "drive/move_task.php",
         "drive/move_task_status.php",
@@ -238,7 +256,8 @@
         "drive/ver_archivo.php",
         "drive/ver_pdf.php",
         "drive/workstation-control.php",
-        "drive/workstation-document.php"
+        "drive/workstation-document.php",
+        "drive/zip_explorer.php"
       ]
     },
     {
@@ -287,7 +306,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-updater.php",
-      "size": 12591,
+      "size": 12607,
       "active": false,
       "references": [
         "drive/tests/installer_service_reconcile_contract_smoke.php"
@@ -470,6 +489,12 @@
       ]
     },
     {
+      "path": "drive/bin/upload_task_reconcile.php",
+      "size": 600,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/bin/workstation_health.php",
       "size": 922,
       "active": false,
@@ -479,7 +504,7 @@
     },
     {
       "path": "drive/bloque_archivos.php",
-      "size": 25636,
+      "size": 26532,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -572,7 +597,7 @@
     },
     {
       "path": "drive/dataword3d.php",
-      "size": 28579,
+      "size": 28719,
       "active": true,
       "references": [
         "drive/so.php",
@@ -800,6 +825,7 @@
         "drive/dataword3d.php",
         "drive/fastdrive-control.php",
         "drive/folder-suggestions.php",
+        "drive/mobile_capture.php",
         "drive/notebook-api.php",
         "drive/notebook.php",
         "drive/office-launch.php",
@@ -809,10 +835,12 @@
         "drive/src/Http/Controller/AuthController.php",
         "drive/src/Http/Controller/FederationModerationController.php",
         "drive/src/Http/Controller/FederationOsAdminController.php",
+        "drive/src/Http/Controller/LoginErrorController.php",
         "drive/src/Security/SessionManager.php",
         "drive/src/View/FederationReportPageRenderer.php",
         "drive/tests/dataword3d_contract_smoke.php",
         "drive/tests/index_federation_drop_smoke.php",
+        "drive/tests/mobile_capture_contract_smoke.php",
         "drive/tests/office_gateway_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/three-lab/drive3d-lab.php"
@@ -1121,10 +1149,12 @@
         "drive/app_bootstrap.php",
         "drive/dataword3d.php",
         "drive/index.php",
+        "drive/login.php",
         "drive/personal_aws_bootstrap.php",
         "drive/s3.php",
         "drive/so.php",
         "drive/src/Federation/FederationDropService.php",
+        "drive/src/Http/Controller/LoginErrorController.php",
         "drive/tests/catalog_folder_paths_regression.php",
         "drive/tests/chunked_upload_cleanup_regression.php",
         "drive/tests/dataword3d_contract_smoke.php",
@@ -1139,6 +1169,7 @@
         "drive/tests/idle_stop_office_regression.php",
         "drive/tests/media_processing_contract_smoke.php",
         "drive/tests/media_worker_behavior_regression.php",
+        "drive/tests/mobile_capture_contract_smoke.php",
         "drive/tests/office_conditional_save_regression.php",
         "drive/tests/public_upload_rollback_regression.php",
         "drive/tests/setup_entry_guard_smoke.php",
@@ -1150,6 +1181,7 @@
         "drive/upload/drivers/RemoteUrlUploader.php",
         "drive/js/dataword3d.js",
         "drive/js/drive3d-surface-placements.js",
+        "drive/js/mobile-capture.js",
         "drive/js/so-screenshot-paste.js",
         "drive/js/soportesMediaTypes.js",
         "drive/js/subir-chunked.js",
@@ -1195,6 +1227,7 @@
         "drive/dataword3d.php",
         "drive/fastdrive-control.php",
         "drive/folder-suggestions.php",
+        "drive/mobile_capture.php",
         "drive/notebook-api.php",
         "drive/notebook.php",
         "drive/office-launch.php",
@@ -1204,10 +1237,12 @@
         "drive/src/Http/Controller/AuthController.php",
         "drive/src/Http/Controller/FederationModerationController.php",
         "drive/src/Http/Controller/FederationOsAdminController.php",
+        "drive/src/Http/Controller/LoginErrorController.php",
         "drive/src/Security/SessionManager.php",
         "drive/src/View/FederationReportPageRenderer.php",
         "drive/tests/dataword3d_contract_smoke.php",
         "drive/tests/index_federation_drop_smoke.php",
+        "drive/tests/mobile_capture_contract_smoke.php",
         "drive/tests/office_gateway_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/three-lab/drive3d-lab.php"
@@ -1243,8 +1278,16 @@
       ]
     },
     {
+      "path": "drive/image-rotate.php",
+      "size": 262,
+      "active": false,
+      "references": [
+        "drive/js/file-applications.js"
+      ]
+    },
+    {
       "path": "drive/index.php",
-      "size": 15927,
+      "size": 17735,
       "active": true,
       "references": [
         "drive/bloque_archivos.php",
@@ -1252,6 +1295,7 @@
         "drive/dataword3d.php",
         "drive/fastdrive-control.php",
         "drive/folder-suggestions.php",
+        "drive/mobile_capture.php",
         "drive/notebook-api.php",
         "drive/notebook.php",
         "drive/office-launch.php",
@@ -1261,10 +1305,12 @@
         "drive/src/Http/Controller/AuthController.php",
         "drive/src/Http/Controller/FederationModerationController.php",
         "drive/src/Http/Controller/FederationOsAdminController.php",
+        "drive/src/Http/Controller/LoginErrorController.php",
         "drive/src/Security/SessionManager.php",
         "drive/src/View/FederationReportPageRenderer.php",
         "drive/tests/dataword3d_contract_smoke.php",
         "drive/tests/index_federation_drop_smoke.php",
+        "drive/tests/mobile_capture_contract_smoke.php",
         "drive/tests/office_gateway_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/three-lab/drive3d-lab.php"
@@ -1287,11 +1333,21 @@
       ]
     },
     {
+      "path": "drive/login-error.php",
+      "size": 180,
+      "active": true,
+      "references": [
+        "drive/src/Http/Controller/AuthController.php",
+        "drive/src/Security/LoginPageGuard.php"
+      ]
+    },
+    {
       "path": "drive/login.php",
-      "size": 3191,
+      "size": 3420,
       "active": true,
       "references": [
         "drive/src/Federation/FederationDropGoogleAuthService.php",
+        "drive/src/Http/Controller/LoginErrorController.php",
         "drive/src/View/FederationDropPageRenderer.php"
       ]
     },
@@ -1333,6 +1389,23 @@
       "size": 318,
       "active": false,
       "references": []
+    },
+    {
+      "path": "drive/mobile-capture-upload.php",
+      "size": 3201,
+      "active": false,
+      "references": [
+        "drive/tests/mobile_capture_contract_smoke.php",
+        "drive/js/mobile-capture.js"
+      ]
+    },
+    {
+      "path": "drive/mobile_capture.php",
+      "size": 3107,
+      "active": false,
+      "references": [
+        "drive/tests/mobile_capture_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/move_multiple.php",
@@ -1406,20 +1479,22 @@
     },
     {
       "path": "drive/office-gateway.php",
-      "size": 30253,
+      "size": 30369,
       "active": false,
       "references": [
         "drive/tests/compute_admission_lock_contract_smoke.php",
-        "drive/tests/office_gateway_contract_smoke.php"
+        "drive/tests/office_gateway_contract_smoke.php",
+        "drive/tests/office_kde_chrome_launch_smoke.php"
       ]
     },
     {
       "path": "drive/office-launch.php",
-      "size": 2873,
+      "size": 3065,
       "active": true,
       "references": [
         "drive/so.php",
         "drive/tests/office_gateway_contract_smoke.php",
+        "drive/tests/office_kde_chrome_launch_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/tests/web_os_remote_applications_smoke.php",
         "drive/tests/web_os_desktop_shell_functional.js"
@@ -1543,7 +1618,8 @@
       "size": 261,
       "active": false,
       "references": [
-        "drive/js/archivos.js"
+        "drive/js/archivos.js",
+        "drive/js/so.js"
       ]
     },
     {
@@ -1556,7 +1632,7 @@
     },
     {
       "path": "drive/s3.php",
-      "size": 97069,
+      "size": 97184,
       "active": true,
       "references": [
         "drive/app_bootstrap.php",
@@ -1567,7 +1643,6 @@
         "drive/src/Http/Controller/AbstractJsonController.php",
         "drive/src/View/ActivityCostPageRenderer.php",
         "drive/src/View/FederationModerationPageRenderer.php",
-        "drive/src/View/FederationPageRenderer.php",
         "drive/src/View/FederationPortalRenderer.php",
         "drive/src/View/FederationReportPageRenderer.php",
         "drive/src/View/PersonalAwsPageRenderer.php",
@@ -1645,6 +1720,7 @@
         "drive/dataword3d.php",
         "drive/fastdrive-control.php",
         "drive/folder-suggestions.php",
+        "drive/mobile_capture.php",
         "drive/notebook-api.php",
         "drive/notebook.php",
         "drive/office-launch.php",
@@ -1654,10 +1730,12 @@
         "drive/src/Http/Controller/AuthController.php",
         "drive/src/Http/Controller/FederationModerationController.php",
         "drive/src/Http/Controller/FederationOsAdminController.php",
+        "drive/src/Http/Controller/LoginErrorController.php",
         "drive/src/Security/SessionManager.php",
         "drive/src/View/FederationReportPageRenderer.php",
         "drive/tests/dataword3d_contract_smoke.php",
         "drive/tests/index_federation_drop_smoke.php",
+        "drive/tests/mobile_capture_contract_smoke.php",
         "drive/tests/office_gateway_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/three-lab/drive3d-lab.php"
@@ -1665,20 +1743,23 @@
     },
     {
       "path": "drive/so.php",
-      "size": 128081,
+      "size": 135091,
       "active": true,
       "references": [
         "drive/dataword3d.php",
+        "drive/mobile_capture.php",
         "drive/s3.php",
         "drive/src/Admin/ProductionPreflightService.php",
         "drive/src/Http/Controller/AbstractJsonController.php",
         "drive/src/Http/Controller/AuthController.php",
+        "drive/src/View/FederationPageRenderer.php",
         "drive/tests/database_backup_contract_smoke.php",
         "drive/tests/dataword3d_contract_smoke.php",
         "drive/tests/drive3d_native_action_context_test.php",
         "drive/tests/node_diagnostics_contract_smoke.php",
         "drive/tests/notebook_contract_smoke.php",
         "drive/tests/office_gateway_contract_smoke.php",
+        "drive/tests/office_kde_chrome_launch_smoke.php",
         "drive/tests/server_console_contract_smoke.php",
         "drive/tests/web_os_clipboard_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
@@ -1698,6 +1779,14 @@
       ]
     },
     {
+      "path": "drive/src/Activity/AccountingProfile.php",
+      "size": 1510,
+      "active": false,
+      "references": [
+        "drive/tests/accounting_profile_smoke.php"
+      ]
+    },
+    {
       "path": "drive/src/Activity/ActivityCostRecorder.php",
       "size": 5467,
       "active": false,
@@ -1705,13 +1794,13 @@
     },
     {
       "path": "drive/src/Activity/ActivityCostRepository.php",
-      "size": 7575,
+      "size": 10173,
       "active": false,
       "references": []
     },
     {
       "path": "drive/src/Activity/ActivityCostService.php",
-      "size": 5706,
+      "size": 7314,
       "active": false,
       "references": []
     },
@@ -1725,9 +1814,11 @@
     },
     {
       "path": "drive/src/Activity/AwsUnitPriceCatalog.php",
-      "size": 2709,
+      "size": 3575,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/aws_cost_attribution_safety_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Activity/PollyTaskReconciler.php",
@@ -1747,6 +1838,14 @@
       "active": false,
       "references": [
         "drive/tests/transcribe_s3_recovery_contract_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/Activity/UserAwsAccounting.php",
+      "size": 4078,
+      "active": false,
+      "references": [
+        "drive/tests/user_aws_accounting_smoke.php"
       ]
     },
     {
@@ -1796,7 +1895,7 @@
     },
     {
       "path": "drive/src/Admin/ManagedRuntimeEnvironment.php",
-      "size": 20174,
+      "size": 20619,
       "active": true,
       "references": [
         "drive/app_bootstrap.php",
@@ -1927,7 +2026,7 @@
     },
     {
       "path": "drive/src/Application/FileListService.php",
-      "size": 5109,
+      "size": 6622,
       "active": false,
       "references": [
         "drive/tests/large_folder_regression.php",
@@ -1986,6 +2085,20 @@
       ]
     },
     {
+      "path": "drive/src/Application/NativeDrivePolicy.php",
+      "size": 1526,
+      "active": false,
+      "references": [
+        "drive/tests/native_drive_policy_regression.php"
+      ]
+    },
+    {
+      "path": "drive/src/Application/NativeDriveService.php",
+      "size": 2153,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/src/Application/PhpLintService.php",
       "size": 2577,
       "active": false,
@@ -2014,6 +2127,26 @@
       "size": 2569,
       "active": false,
       "references": []
+    },
+    {
+      "path": "drive/src/Application/ZipExplorerService.php",
+      "size": 942,
+      "active": false,
+      "references": [
+        "drive/tests/native_zip_json_authorization.php",
+        "drive/tests/zip_lambda_integration_contract_smoke.php",
+        "drive/tests/zip_large_archive_contract_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/Application/ZipLambdaExplorerService.php",
+      "size": 10989,
+      "active": false,
+      "references": [
+        "drive/tests/native_zip_json_authorization.php",
+        "drive/tests/zip_lambda_integration_contract_smoke.php",
+        "drive/tests/zip_large_archive_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Aws/AwsCostService.php",
@@ -2217,7 +2350,7 @@
     },
     {
       "path": "drive/src/Core/DriveApplication.php",
-      "size": 17514,
+      "size": 17884,
       "active": false,
       "references": []
     },
@@ -2339,6 +2472,14 @@
       "active": false,
       "references": [
         "drive/tests/federation_customs_contract_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/Federation/FederationDownloadAuditRepository.php",
+      "size": 4885,
+      "active": false,
+      "references": [
+        "drive/tests/federation_download_audit_contract_smoke.php"
       ]
     },
     {
@@ -2498,9 +2639,11 @@
     },
     {
       "path": "drive/src/Federation/FederationEventStore.php",
-      "size": 13047,
+      "size": 13919,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/federation_sequence_allocator_contract.php"
+      ]
     },
     {
       "path": "drive/src/Federation/FederationException.php",
@@ -2888,7 +3031,7 @@
     },
     {
       "path": "drive/src/Http/Controller/AuthController.php",
-      "size": 3656,
+      "size": 3540,
       "active": false,
       "references": [
         "drive/tests/federation_drop_contract_smoke.php",
@@ -2918,7 +3061,7 @@
     },
     {
       "path": "drive/src/Http/Controller/BackgroundTaskController.php",
-      "size": 49958,
+      "size": 50302,
       "active": false,
       "references": [
         "drive/tests/folder_textract_background_task_contract.php",
@@ -3066,7 +3209,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FileAccessController.php",
-      "size": 6142,
+      "size": 6297,
       "active": false,
       "references": [
         "drive/tests/arcadelink_bulk_contract_regression.php",
@@ -3118,10 +3261,24 @@
       "references": []
     },
     {
+      "path": "drive/src/Http/Controller/ImageRotationController.php",
+      "size": 3164,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/src/Http/Controller/LegacyUploadController.php",
       "size": 6446,
       "active": false,
       "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/LoginErrorController.php",
+      "size": 5152,
+      "active": true,
+      "references": [
+        "drive/login-error.php"
+      ]
     },
     {
       "path": "drive/src/Http/Controller/MediaPlaylistController.php",
@@ -3148,6 +3305,12 @@
       ]
     },
     {
+      "path": "drive/src/Http/Controller/NativeDriveController.php",
+      "size": 5060,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/src/Http/Controller/NavigationController.php",
       "size": 1111,
       "active": false,
@@ -3160,6 +3323,7 @@
       "references": [
         "drive/tests/node_diagnostics_contract_smoke.php",
         "drive/tests/node_diagnostics_control_smoke.php",
+        "drive/tests/node_mysql_monitor_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/tests/web_os_multiwindow_smoke.php",
         "drive/tests/web_os_pending_fixes_smoke.php"
@@ -3268,7 +3432,7 @@
     },
     {
       "path": "drive/src/Http/Controller/UploadController.php",
-      "size": 15405,
+      "size": 15859,
       "active": false,
       "references": [
         "drive/tests/dataword3d_contract_smoke.php",
@@ -3286,13 +3450,17 @@
       "path": "drive/src/Http/JsonResponse.php",
       "size": 785,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/native_zip_json_authorization.php"
+      ]
     },
     {
       "path": "drive/src/Http/Request.php",
       "size": 3083,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/native_authentication_regression.php"
+      ]
     },
     {
       "path": "drive/src/Mail/SmtpConfig.php",
@@ -3351,7 +3519,7 @@
     },
     {
       "path": "drive/src/Media/MediaWorkerNodeService.php",
-      "size": 37363,
+      "size": 38354,
       "active": false,
       "references": [
         "drive/tests/compute_admission_lock_contract_smoke.php",
@@ -3370,7 +3538,7 @@
     },
     {
       "path": "drive/src/Media/ThumbnailService.php",
-      "size": 20442,
+      "size": 26154,
       "active": false,
       "references": [
         "drive/tests/web_os_contract_smoke.php"
@@ -3478,7 +3646,9 @@
       "path": "drive/src/Security/AuthenticationService.php",
       "size": 1757,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/native_authentication_regression.php"
+      ]
     },
     {
       "path": "drive/src/Security/Drive3dPreferenceSanitizer.php",
@@ -3502,10 +3672,22 @@
       "references": []
     },
     {
-      "path": "drive/src/Security/LoginRateLimiter.php",
-      "size": 4222,
-      "active": false,
+      "path": "drive/src/Security/LoginPageGuard.php",
+      "size": 1282,
+      "active": true,
       "references": [
+        "drive/index.php",
+        "drive/login.php",
+        "drive/src/Http/Controller/LoginErrorController.php"
+      ]
+    },
+    {
+      "path": "drive/src/Security/LoginRateLimiter.php",
+      "size": 6732,
+      "active": true,
+      "references": [
+        "drive/src/Security/LoginPageGuard.php",
+        "drive/tests/login_lockout_regression.php",
         "drive/tests/security_hardening_smoke.php"
       ]
     },
@@ -3529,6 +3711,7 @@
       "size": 947,
       "active": false,
       "references": [
+        "drive/tests/native_authentication_regression.php",
         "drive/tests/password_credential_verifier_smoke.php"
       ]
     },
@@ -3540,9 +3723,13 @@
     },
     {
       "path": "drive/src/Security/SessionManager.php",
-      "size": 4958,
-      "active": false,
-      "references": []
+      "size": 6030,
+      "active": true,
+      "references": [
+        "drive/src/Security/LoginPageGuard.php",
+        "drive/tests/native_authentication_regression.php",
+        "drive/tests/native_session_revocation_regression.php"
+      ]
     },
     {
       "path": "drive/src/Security/SuperAdminReauthenticationService.php",
@@ -3701,7 +3888,7 @@
     },
     {
       "path": "drive/src/Storage/FolderRepository.php",
-      "size": 4029,
+      "size": 4732,
       "active": false,
       "references": [
         "drive/tests/web_os_contract_smoke.php",
@@ -3741,7 +3928,8 @@
       "size": 1377,
       "active": false,
       "references": [
-        "drive/tests/chunked_upload_cleanup_regression.php"
+        "drive/tests/chunked_upload_cleanup_regression.php",
+        "drive/tests/native_drive_policy_regression.php"
       ]
     },
     {
@@ -3814,7 +4002,7 @@
     },
     {
       "path": "drive/src/System/NodeCapabilityService.php",
-      "size": 8877,
+      "size": 9004,
       "active": false,
       "references": [
         "drive/tests/node_diagnostics_contract_smoke.php",
@@ -3823,11 +4011,12 @@
     },
     {
       "path": "drive/src/System/NodeRuntimeStatusService.php",
-      "size": 29786,
+      "size": 30429,
       "active": false,
       "references": [
         "drive/tests/node_diagnostics_contract_smoke.php",
-        "drive/tests/node_diagnostics_control_smoke.php"
+        "drive/tests/node_diagnostics_control_smoke.php",
+        "drive/tests/node_mysql_monitor_contract_smoke.php"
       ]
     },
     {
@@ -3907,16 +4096,24 @@
       ]
     },
     {
+      "path": "drive/src/Upload/UploadTaskReconciler.php",
+      "size": 3002,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/src/Upload/UploadTaskStore.php",
-      "size": 6579,
+      "size": 8581,
       "active": false,
       "references": [
-        "drive/tests/upload_task_center_contract.php"
+        "drive/tests/upload_task_center_contract.php",
+        "drive/tests/upload_task_reconcile_contract.php",
+        "drive/tests/upload_task_terminal_regression.php"
       ]
     },
     {
       "path": "drive/src/View/ActivityCostPageRenderer.php",
-      "size": 19974,
+      "size": 31386,
       "active": false,
       "references": []
     },
@@ -4001,7 +4198,8 @@
       "active": false,
       "references": [
         "drive/tests/federation_public_download_failover_smoke.php",
-        "drive/tests/large_folder_regression.php"
+        "drive/tests/large_folder_regression.php",
+        "drive/tests/native_drive_policy_regression.php"
       ]
     },
     {
@@ -4086,8 +4284,14 @@
       ]
     },
     {
+      "path": "drive/tests/accounting_profile_smoke.php",
+      "size": 1043,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/tests/activity_costs_smoke.php",
-      "size": 8691,
+      "size": 12731,
       "active": false,
       "references": []
     },
@@ -4106,6 +4310,12 @@
     {
       "path": "drive/tests/arcadelink_collection_regression.php",
       "size": 5218,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/aws_cost_attribution_safety_smoke.php",
+      "size": 1317,
       "active": false,
       "references": []
     },
@@ -4147,7 +4357,7 @@
     },
     {
       "path": "drive/tests/dataword3d_contract_smoke.php",
-      "size": 18238,
+      "size": 18309,
       "active": false,
       "references": []
     },
@@ -4202,6 +4412,12 @@
     {
       "path": "drive/tests/federation_directory_smoke.php",
       "size": 4105,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/federation_download_audit_contract_smoke.php",
+      "size": 1700,
       "active": false,
       "references": []
     },
@@ -4274,6 +4490,12 @@
     {
       "path": "drive/tests/federation_replica_smoke.php",
       "size": 6352,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/federation_sequence_allocator_contract.php",
+      "size": 2104,
       "active": false,
       "references": []
     },
@@ -4356,6 +4578,12 @@
       "references": []
     },
     {
+      "path": "drive/tests/login_lockout_regression.php",
+      "size": 4413,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/tests/media_processing_contract_smoke.php",
       "size": 17737,
       "active": false,
@@ -4368,6 +4596,42 @@
       "references": []
     },
     {
+      "path": "drive/tests/mobile_capture_contract_smoke.php",
+      "size": 2074,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/native_api_authorization_regression.php",
+      "size": 6157,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/native_authentication_regression.php",
+      "size": 3666,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/native_drive_policy_regression.php",
+      "size": 2364,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/native_session_revocation_regression.php",
+      "size": 1643,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/native_zip_json_authorization.php",
+      "size": 3928,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/tests/node_diagnostics_contract_smoke.php",
       "size": 6878,
       "active": false,
@@ -4376,6 +4640,12 @@
     {
       "path": "drive/tests/node_diagnostics_control_smoke.php",
       "size": 3419,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/node_mysql_monitor_contract_smoke.php",
+      "size": 1265,
       "active": false,
       "references": []
     },
@@ -4393,7 +4663,13 @@
     },
     {
       "path": "drive/tests/office_gateway_contract_smoke.php",
-      "size": 17873,
+      "size": 17818,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/office_kde_chrome_launch_smoke.php",
+      "size": 2010,
       "active": false,
       "references": []
     },
@@ -4500,6 +4776,24 @@
       "references": []
     },
     {
+      "path": "drive/tests/upload_task_reconcile_contract.php",
+      "size": 1566,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/upload_task_terminal_regression.php",
+      "size": 1130,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/user_aws_accounting_smoke.php",
+      "size": 1907,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/tests/user_identity_presenter_smoke.php",
       "size": 966,
       "active": false,
@@ -4519,7 +4813,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 87247,
+      "size": 87484,
       "active": false,
       "references": []
     },
@@ -4574,6 +4868,18 @@
     {
       "path": "drive/tests/workstation_phase1_contract_smoke.php",
       "size": 8245,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/zip_lambda_integration_contract_smoke.php",
+      "size": 923,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/zip_large_archive_contract_smoke.php",
+      "size": 1576,
       "active": false,
       "references": []
     },
@@ -4802,8 +5108,10 @@
         "drive/dataword3d.php",
         "drive/s3.php",
         "drive/so.php",
+        "drive/tests/mobile_capture_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/js/dataword3d.js",
+        "drive/js/mobile-capture.js",
         "drive/js/so-screenshot-paste.js",
         "drive/js/soportesMediaTypes.js",
         "drive/js/subir-chunked.js",
@@ -4868,6 +5176,9 @@
       "size": 256,
       "active": false,
       "references": [
+        "drive/tests/web_os_contract_smoke.php",
+        "drive/js/file-applications.js",
+        "drive/js/so.js",
         "drive/js/ver-pdf.js"
       ]
     },
@@ -4885,6 +5196,15 @@
       "active": false,
       "references": [
         "drive/tests/office_gateway_contract_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/zip_explorer.php",
+      "size": 137,
+      "active": false,
+      "references": [
+        "drive/src/Application/ZipLambdaExplorerService.php",
+        "drive/js/so.js"
       ]
     }
   ]

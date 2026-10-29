@@ -140,8 +140,16 @@ fi
 CHROME_SANDBOX_PROFILE="/etc/arcadecloud-drive/chrome-seccomp.json"
 CHROME_SANDBOX_MARKER="/etc/arcadecloud-drive/chrome-sandbox-enabled"
 CHROME_RUNTIME_OPTS=""
-if [[ -f "$CHROME_SANDBOX_MARKER" && -r "$CHROME_SANDBOX_PROFILE" ]]; then
-  CHROME_RUNTIME_OPTS="--security-opt seccomp=$CHROME_SANDBOX_PROFILE --env ARCADECLOUD_CHROME_SANDBOX_ENABLED=1"
+if [[ -s "$CHROME_SANDBOX_MARKER" && -r "$CHROME_SANDBOX_PROFILE" ]]; then
+  EXPECTED_CHROME_PROFILE_HASH="$(cat "$CHROME_SANDBOX_MARKER")"
+  ACTUAL_CHROME_PROFILE_HASH="$(sha256sum "$CHROME_SANDBOX_PROFILE" | awk '{print $1}')"
+  if [[ "$EXPECTED_CHROME_PROFILE_HASH" =~ ^[a-f0-9]{64}$ \
+        && "$ACTUAL_CHROME_PROFILE_HASH" == "$EXPECTED_CHROME_PROFILE_HASH" ]]; then
+    CHROME_RUNTIME_OPTS="--security-opt seccomp=$CHROME_SANDBOX_PROFILE --env ARCADECLOUD_CHROME_SANDBOX_ENABLED=1"
+    echo "✓ Chrome: perfil sandbox revisado habilitado para el próximo inicio."
+  else
+    echo "AVISO: el perfil sandbox de Chrome no coincide con su hash; se mantiene el modo anterior." >&2
+  fi
 fi
 cat > "$SERVICE" <<EOF
 [Unit]

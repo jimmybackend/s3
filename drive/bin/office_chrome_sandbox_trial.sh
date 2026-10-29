@@ -4,6 +4,13 @@
 # seccomp=unconfined y NO elimina la política no-new-privileges.
 set -euo pipefail
 
+ENABLE_ON_PASS=0
+case "${1:-}" in
+  "") ;;
+  --enable-on-pass) ENABLE_ON_PASS=1 ;;
+  *) echo "Uso: sudo bash drive/bin/office_chrome_sandbox_trial.sh [--enable-on-pass]" >&2; exit 2 ;;
+esac
+
 if [[ "$EUID" -ne 0 ]]; then
   echo "Ejecuta: sudo bash drive/bin/office_chrome_sandbox_trial.sh"
   exit 2
@@ -120,5 +127,24 @@ docker run --rm --network none \
   '
 
 echo "=== RESULTADO ==="
-echo "PRUEBA APROBADA: se puede preparar una política revisada sin abrir permisos generales."
-echo "Workstation, Guacamole y archivos de usuario NO se modificaron."
+echo "PRUEBA APROBADA: Chrome inició en el contenedor descartable con sandbox."
+
+if [[ "$ENABLE_ON_PASS" -eq 1 ]]; then
+  echo "=== INSTALANDO PERFIL REVISADO (NO REINICIA OFFICE) ==="
+  profile=/etc/arcadecloud-drive/chrome-seccomp.json
+  marker=/etc/arcadecloud-drive/chrome-sandbox-enabled
+  install -d -m 0750 /etc/arcadecloud-drive
+  install -o root -g root -m 0644 "$temp_dir/office-trial.json" "$profile"
+  hash="$(sha256sum "$profile" | awk '{print $1}')"
+  temporary_marker="$(mktemp /etc/arcadecloud-drive/.chrome-sandbox-enabled.XXXXXXXX)"
+  trap 'rm -f "$temporary_marker"; rm -rf "$temp_dir"' EXIT
+  printf '%s\\n' "$hash" > "$temporary_marker"
+  chown root:root "$temporary_marker"
+  chmod 0600 "$temporary_marker"
+  mv -f "$temporary_marker" "$marker"
+  echo "OK: perfil seccomp comprobado y guardado, con SHA-256 de integridad."
+  echo "PENDIENTE: sudo bash drive/bin/install_workstation_node.sh --reconcile"
+  echo "El sandbox se aplicará al siguiente reinicio de Workstation, no ahora."
+else
+  echo "Workstation, Guacamole y archivos de usuario NO se modificaron."
+fi

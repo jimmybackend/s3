@@ -21,8 +21,9 @@ $check(!str_contains($gateway, 'id="officeAudioToggle"')
 $check(str_contains($novnc, 'window.__arcadecloudAudioInstalled'),
     'noVNC instala un solo controlador de audio por documento');
 $check(str_contains($novnc, "audio.src = '/__office_audio?session='")
-    && str_contains($novnc, 'tryStart();'),
-    'Audio noVNC intenta iniciar solo cuando navegador lo autoriza');
+    && str_contains($novnc, 'tryStart(false);')
+    && str_contains($novnc, 'tryStart(true);'),
+    'Audio noVNC intenta reproducir automáticamente y reintenta tras un gesto autorizado');
 $check(str_contains($novnc, "lastError === 'NotAllowedError'")
     && str_contains($novnc, "document.addEventListener('pointerdown'")
     && str_contains($novnc, "document.addEventListener('keydown'"),

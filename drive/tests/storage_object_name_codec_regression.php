@@ -53,7 +53,7 @@ checkStorageName(true, '1024 bytes UTF-8 son válidos aunque sean 512 caracteres
 expectKeyRejected(str_repeat('ñ', 513));
 
 // El límite es de la clave completa, no solo del último nombre del archivo.
-$prefix = 'Data/' . str_repeat('carpeta/', 120);
+$prefix = 'Data/' . str_repeat('carpeta/', 125);
 $key = $prefix . $codec->createFileObjectName('Sentencia.pdf');
 expectKeyRejected($key);
 

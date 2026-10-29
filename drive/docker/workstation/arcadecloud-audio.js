@@ -10,6 +10,13 @@
     // streams duplicados cuando la página principal ya tiene controles.
     try {
       if (window.parent !== window) {
+        // Si Office público aún no recibió el CSS nuevo, posicionar el
+        // contador existente durante esta sesión sin tocar KDE ni el Dock.
+        const idleCountdown = window.parent.document.getElementById('officeIdleStatus');
+        if (idleCountdown) {
+          idleCountdown.style.right = '12px';
+          idleCountdown.style.bottom = '12px';
+        }
         const parentToggle = window.parent.document.getElementById('officeAudioToggle');
         const parentTest = window.parent.document.getElementById('officeAudioTest');
         if (parentToggle && parentTest) return;

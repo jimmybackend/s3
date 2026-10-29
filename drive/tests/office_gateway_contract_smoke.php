@@ -70,7 +70,7 @@ officeGatewayContract(
 
 officeGatewayContract(
     !str_contains($gateway, "header('Location: /guacamole/#/', true, 302)")
-    && str_contains($gateway, "['guacamole', 'kde']")
+    && str_contains($gateway, "['novnc', 'guacamole', 'kde']")
     && str_contains($gateway, "? '/guacamole/'")
     && str_contains($gateway, "{passive:true,capture:true}"),
     'Guacamole y KDE permanecen dentro del wrapper que mide interacción real'

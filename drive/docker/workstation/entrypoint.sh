@@ -69,7 +69,12 @@ sleep 2
 
 # KDE/noVNC necesita una salida de sonido propia aunque Guacamole no haya
 # iniciado XRDP. El script es idempotente entre sesiones y conserva XRDP.
-if ! /usr/local/bin/arcadecloud-audio-ensure-sink >/tmp/arcade-virtual-audio.log 2>&1; then
+if /usr/local/bin/arcadecloud-audio-ensure-sink >/tmp/arcade-virtual-audio.log 2>&1; then
+    # PULSE_SINK sólo se hereda por KDE/noVNC: no desviar el audio XRDP.
+    if [ "${ARCADECLOUD_SESSION_TRANSPORT:-}" = "novnc" ]; then
+        export PULSE_SINK=arcadecloud-web
+    fi
+else
     echo "[Office audio] No se pudo configurar el sink virtual; XRDP sigue disponible." >&2
 fi
 
@@ -129,6 +134,7 @@ chown arcade:arcade /home/arcade/.local/bin/arcadecloud-start-xfce
 
 cat > /home/arcade/.xsession <<'XSESSION'
 #!/bin/sh
+export ARCADECLOUD_SESSION_TRANSPORT=xrdp
 export HOME=/home/arcade
 export XDG_RUNTIME_DIR=/run/user/10001
 unset SESSION_MANAGER
@@ -145,6 +151,7 @@ chown -R arcade:arcade /home/arcade/.config
 
 cat > /home/arcade/.vnc/xstartup <<'VNC'
 #!/bin/sh
+export ARCADECLOUD_SESSION_TRANSPORT=novnc
 export HOME=/home/arcade
 export XDG_RUNTIME_DIR=/run/user/10001
 unset SESSION_MANAGER

@@ -2,6 +2,8 @@
    Solo carga en la página noVNC autenticada; activación siempre manual. */
 (() => {
   'use strict';
+  class ArcadeCloudOfficeAudio {
+    static boot() {
   if (window.__arcadecloudAudioInstalled) return;
   window.__arcadecloudAudioInstalled = true;
   function setup() {
@@ -65,4 +67,7 @@
   } else {
     setup();
   }
+    }
+  }
+  ArcadeCloudOfficeAudio.boot();
 })();

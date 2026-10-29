@@ -38,6 +38,7 @@ final class SingleUploadService
         $route = $this->normalizePrefix($route);
         $physicalName = $this->codec->createFileObjectName($originalName);
         $key = $this->normalizeKey($route . $physicalName);
+        StorageObjectNameCodec::assertS3KeyLength($key);
 
         $sha256 = (string)(hash_file('sha256', $tmpPath) ?: '');
         if ($sha256 === '') {

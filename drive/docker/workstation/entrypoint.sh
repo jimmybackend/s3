@@ -67,6 +67,18 @@ sleep 1
 wireplumber >/tmp/arcade-wireplumber.log 2>&1 &
 sleep 2
 
+# noVNC no depende de Guacamole/RDP para tener un dispositivo de audio.
+# PULSE_SINK se hereda únicamente por las aplicaciones de KDE dentro de :1;
+# nunca cambiar el sink global ni el audio de Guacamole.
+if [ "${ARCADECLOUD_SESSION_TRANSPORT:-}" = "novnc" ]; then
+    if /usr/local/bin/arcadecloud-novnc-audio-init \
+        >/tmp/arcade-novnc-audio.log 2>&1; then
+        export PULSE_SINK=arcadecloud-novnc-sink
+    else
+        echo "[ArcadeCloud noVNC] Sin sink virtual; revisa /tmp/arcade-novnc-audio.log" >&2
+    fi
+fi
+
 /usr/libexec/pipewire-module-xrdp/load_pw_modules.sh -l 3 \
   >/tmp/arcade-xrdp-audio.log 2>&1 &
 
@@ -111,6 +123,7 @@ chown arcade:arcade /home/arcade/.local/bin/arcadecloud-start-xfce
 
 cat > /home/arcade/.xsession <<'XSESSION'
 #!/bin/sh
+export ARCADECLOUD_SESSION_TRANSPORT=xrdp
 export HOME=/home/arcade
 export XDG_RUNTIME_DIR=/run/user/10001
 unset SESSION_MANAGER
@@ -127,6 +140,7 @@ chown -R arcade:arcade /home/arcade/.config
 
 cat > /home/arcade/.vnc/xstartup <<'VNC'
 #!/bin/sh
+export ARCADECLOUD_SESSION_TRANSPORT=novnc
 export HOME=/home/arcade
 export XDG_RUNTIME_DIR=/run/user/10001
 unset SESSION_MANAGER

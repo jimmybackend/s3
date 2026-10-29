@@ -45,36 +45,77 @@
     audio.autoplay = false;
     audio.muted = false;
     audio.volume = 1;
+    audio.setAttribute('aria-hidden', 'true');
+    audio.style.display = 'none';
+    document.body.appendChild(audio);
 
     let playing = false;
-    let starting = false;
     let closed = false;
-    let needsGesture = false;
+    let lastError = '';
+    let phase = 'starting';
+    let attempt = 0;
+    let lastRetryMs = 0;
 
-    function tryStart() {
-      if (closed || playing || starting) return;
-      starting = true;
-      if (!audio.hasAttribute('src')) audio.src = '/__office_audio?session=' + Date.now();
-      // El método play() se invoca de forma síncrona desde pointerdown/keydown
-      // para preservar la activación de usuario del navegador.
-      const request = audio.play();
-      if (!request || typeof request.then !== 'function') {
-        starting = false;
+    // Diagnóstico local en DevTools, sin tokens ni cabeceras de sesión.
+    // Se consulta desde la consola del iframe como:
+    // window.__arcadecloudAudioDiagnostics()
+    window.__arcadecloudAudioDiagnostics = () => ({
+      phase,
+      paused: audio.paused,
+      muted: audio.muted,
+      volume: audio.volume,
+      readyState: audio.readyState,
+      networkState: audio.networkState,
+      currentTime: Math.round(audio.currentTime || 0),
+      errorCode: audio.error ? audio.error.code : 0,
+      lastError
+    });
+
+    function tryStart(fromGesture) {
+      if (closed || playing) return;
+      const now = Date.now();
+      if (fromGesture && now - lastRetryMs < 900) return;
+      if (fromGesture) lastRetryMs = now;
+
+      // IMPORTANTE: volver a llamar play() aunque la petición automática
+      // anterior esté pendiente. Chrome puede mantener esa promesa esperando
+      // datos y antes 'starting=true' impedía aprovechar el primer clic.
+      const thisAttempt = ++attempt;
+      if (!audio.hasAttribute('src') || audio.error) {
+        audio.removeAttribute('src');
+        audio.src = '/__office_audio?session=' + Date.now();
+      }
+      audio.muted = false;
+      audio.volume = 1;
+      phase = fromGesture ? 'gesture-request' : 'autoplay-request';
+      let request;
+      try {
+        request = audio.play(); // síncrono dentro del gesto real
+      } catch (error) {
+        if (thisAttempt === attempt) {
+          phase = 'play-error';
+          lastError = error && error.name ? error.name : 'play-error';
+        }
         return;
       }
+      if (!request || typeof request.then !== 'function') return;
       request.then(() => {
-        starting = false;
+        if (closed) return;
         playing = true;
-        needsGesture = false;
+        phase = 'playing';
+        lastError = '';
       }).catch((error) => {
-        starting = false;
-        if (error && error.name === 'NotAllowedError') {
-          needsGesture = true;
-        } else {
-          needsGesture = true;
-          console.warn('[ArcadeCloud noVNC audio] Reproducción no disponible', error);
+        // Una promesa antigua puede fallar DESPUÉS de un clic legítimo.
+        // No detener el flujo que esté arrancando la petición más reciente.
+        if (closed || thisAttempt !== attempt) return;
+        playing = false;
+        lastError = (error && error.name) || 'media-error';
+        phase = lastError === 'NotAllowedError' ? 'awaiting-gesture' : 'failed';
+        if (phase !== 'awaiting-gesture') {
+          console.warn('[ArcadeCloud Office] Audio noVNC: ' + lastError);
         }
-        // No dejar una captura FFmpeg en curso si el navegador impide sonar.
+        // En un bloqueo de autoplay no abrir capturas MP3 innecesarias.
+        // La siguiente interacción puede iniciar un src nuevo.
         audio.pause();
         audio.removeAttribute('src');
         audio.load();
@@ -82,48 +123,67 @@
     }
 
     audio.addEventListener('playing', () => {
+      if (closed) return;
       playing = true;
-      starting = false;
-      needsGesture = false;
+      phase = 'playing';
+      lastError = '';
+    });
+    audio.addEventListener('waiting', () => {
+      if (!closed && !playing) phase = 'buffering';
+    });
+    audio.addEventListener('stalled', () => {
+      if (!closed) phase = 'network-stalled';
     });
     audio.addEventListener('error', () => {
       if (closed) return;
       playing = false;
-      starting = false;
-      needsGesture = true;
-      console.warn('[ArcadeCloud noVNC audio] El flujo MP3 no llegó al navegador');
+      phase = 'stream-error';
+      lastError = 'MediaError-' + (audio.error ? audio.error.code : 0);
+      console.warn('[ArcadeCloud Office] Falló el audio remoto: ' + lastError);
     });
     audio.addEventListener('ended', () => {
       playing = false;
-      starting = false;
-      needsGesture = true;
+      phase = 'ended';
       audio.removeAttribute('src');
+    });
+    audio.addEventListener('pause', () => {
+      if (!closed && playing) {
+        playing = false;
+        phase = 'paused';
+      }
     });
 
     function retryAfterGesture() {
-      if (!playing && !starting && needsGesture) tryStart();
+      if (closed || playing) return;
+      tryStart(true);
     }
-    // Solo cuando el usuario interactúa. No hay botón ni tono flotante.
+
+    // El ratón/tap/teclado son acciones normales dentro de noVNC; no
+    // muestran botones extra y respetan el bloqueo autoplay de Chrome.
     document.addEventListener('pointerdown', retryAfterGesture, {capture: true});
     document.addEventListener('keydown', retryAfterGesture, {capture: true});
     if (parent) {
       try {
         parent.document.addEventListener('pointerdown', retryAfterGesture, {capture: true});
         parent.document.addEventListener('keydown', retryAfterGesture, {capture: true});
-      } catch (_) { /* noVNC de otro origen */ }
+      } catch (_) { /* noVNC abierto desde otro origen */ }
     }
 
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && !playing && !closed) tryStart(false);
+    });
     window.addEventListener('pagehide', () => {
       closed = true;
+      phase = 'closed';
       audio.pause();
       audio.removeAttribute('src');
       audio.load();
     }, {once: true});
 
-    // Intentar el audio sin interacción cuando el navegador ya autoriza
-    // autoplay para office.esforzados.com. Si lo bloquea, basta hacer clic
-    // dentro del escritorio, sin modificar políticas de Chrome.
-    tryStart();
+    // En sitios autorizados comienza automáticamente. En Chrome con
+    // bloqueo autoplay comienza al primer clic/tecla, incluso si el
+    // intento inicial de play() quedó esperando indefinidamente.
+    tryStart(false);
   }
 
   if (document.readyState === 'loading') {

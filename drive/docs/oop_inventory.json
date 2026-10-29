@@ -1,12 +1,12 @@
 {
   "summary": {
-    "php_total": 605,
-    "php_class_modules": 332,
+    "php_total": 613,
+    "php_class_modules": 333,
     "php_needs_migration": 0,
-    "php_tests": 100,
+    "php_tests": 107,
     "js_total": 97,
-    "js_class_modules": 89,
-    "js_needs_migration": 0,
+    "js_class_modules": 88,
+    "js_needs_migration": 1,
     "js_tests": 13,
     "js_compatibility_facades": 8,
     "ajax_clients": 60,
@@ -1955,7 +1955,7 @@
     },
     {
       "path": "drive/office-gateway.php",
-      "lines": 675,
+      "lines": 746,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -1974,7 +1974,7 @@
     },
     {
       "path": "drive/office-launch.php",
-      "lines": 86,
+      "lines": 84,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -2789,7 +2789,7 @@
     },
     {
       "path": "drive/src/Application/FileKeyRotationService.php",
-      "lines": 67,
+      "lines": 68,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2819,7 +2819,7 @@
     },
     {
       "path": "drive/src/Application/FileMutationService.php",
-      "lines": 208,
+      "lines": 210,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2864,7 +2864,7 @@
     },
     {
       "path": "drive/src/Application/FolderMutationService.php",
-      "lines": 323,
+      "lines": 363,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3183,7 +3183,7 @@
     },
     {
       "path": "drive/src/Aws/FolderTextractService.php",
-      "lines": 231,
+      "lines": 232,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5803,7 +5803,7 @@
     },
     {
       "path": "drive/src/Office/OfficeDocumentStorageService.php",
-      "lines": 605,
+      "lines": 606,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5863,7 +5863,7 @@
     },
     {
       "path": "drive/src/Office/OfficeSessionLeaseRepository.php",
-      "lines": 207,
+      "lines": 219,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5885,6 +5885,21 @@
       "session": false,
       "superglobals": [],
       "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Office/OfficeUserContainerIdentity.php",
+      "lines": 66,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
       "s3": false,
       "bootstrap": false,
       "html": false,
@@ -6447,7 +6462,7 @@
     },
     {
       "path": "drive/src/Storage/S3ObjectCopyService.php",
-      "lines": 53,
+      "lines": 54,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6462,7 +6477,7 @@
     },
     {
       "path": "drive/src/Storage/StorageObjectNameCodec.php",
-      "lines": 104,
+      "lines": 117,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6717,7 +6732,7 @@
     },
     {
       "path": "drive/src/Upload/PublicDropzoneUploadService.php",
-      "lines": 143,
+      "lines": 144,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6732,7 +6747,7 @@
     },
     {
       "path": "drive/src/Upload/PublicMultipartUploadService.php",
-      "lines": 262,
+      "lines": 263,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6777,7 +6792,7 @@
     },
     {
       "path": "drive/src/Upload/SingleUploadService.php",
-      "lines": 112,
+      "lines": 113,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -8243,6 +8258,36 @@
       "issues": []
     },
     {
+      "path": "drive/tests/office_gateway_audio_persistence_smoke.php",
+      "lines": 40,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/office_gateway_audio_ui_smoke.php",
+      "lines": 55,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/tests/office_gateway_contract_smoke.php",
       "lines": 375,
       "kind": "test script",
@@ -8261,6 +8306,66 @@
     },
     {
       "path": "drive/tests/office_kde_chrome_launch_smoke.php",
+      "lines": 40,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/office_kde_pam_clock_smoke.php",
+      "lines": 29,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/office_novnc_cold_start_smoke.php",
+      "lines": 42,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/office_pipewire_startup_smoke.php",
+      "lines": 30,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/office_user_container_identity_smoke.php",
       "lines": 40,
       "kind": "test script",
       "classes": 0,
@@ -8440,6 +8545,24 @@
       "kind": "test script",
       "classes": 0,
       "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/storage_object_name_codec_regression.php",
+      "lines": 77,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "checkStorageName",
+        "expectKeyRejected"
+      ],
       "session": false,
       "superglobals": [],
       "db": false,
@@ -9069,7 +9192,7 @@
     },
     {
       "path": "drive/upload/drivers/Chunked15MBUploader.php",
-      "lines": 292,
+      "lines": 293,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -9084,7 +9207,7 @@
     },
     {
       "path": "drive/upload/drivers/DropboxUploader.php",
-      "lines": 147,
+      "lines": 148,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -9099,7 +9222,7 @@
     },
     {
       "path": "drive/upload/drivers/LocalPresignedPutUploader.php",
-      "lines": 325,
+      "lines": 326,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -9114,7 +9237,7 @@
     },
     {
       "path": "drive/upload/drivers/RemoteUrlUploader.php",
-      "lines": 493,
+      "lines": 494,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -9313,13 +9436,12 @@
   "js": [
     {
       "path": "drive/docker/workstation/arcadecloud-audio.js",
-      "lines": 74,
-      "kind": "class/module",
-      "classes": [
-        "ArcadeCloudOfficeAudio"
-      ],
+      "lines": 203,
+      "kind": "procedural script",
+      "classes": [],
       "functions": [],
       "window_assign": [
+        "__arcadecloudAudioDiagnostics",
         "__arcadecloudAudioInstalled"
       ],
       "window_func": [],
@@ -9332,7 +9454,9 @@
         "json_consumers": 0,
         "response_checks": 0
       },
-      "issues": []
+      "issues": [
+        "no ES class"
+      ]
     },
     {
       "path": "drive/js/actualizar-hora.js",
@@ -11807,7 +11931,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 135683,
+      "bytes": 144940,
       "valid": true,
       "root_type": "object",
       "keys": [

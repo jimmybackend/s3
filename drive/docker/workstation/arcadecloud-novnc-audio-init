@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# Configura un dispositivo de salida virtual exclusivamente para KDE/noVNC.
+# Ejecutar como arcade una vez por sesión VNC, después de arrancar PipeWire.
+# Nunca cambia el sink global de XRDP ni reinicia servicios.
+set -euo pipefail
+
+SINK="arcadecloud-novnc-sink"
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/10001}"
+export PULSE_SERVER="unix:${XDG_RUNTIME_DIR}/pulse/native"
+
+available() {
+  pactl list short sinks 2>/dev/null | awk -v name="$SINK" '$2==name { found=1 } END { exit !found }'
+}
+
+# Si Guacamole inicia primero, PipeWire quizá ya está preparado.
+# Si no, esperar a que el servidor iniciado por xstartup acepte conexiones.
+for _ in $(seq 1 20); do
+  if pactl info >/dev/null 2>&1; then
+    break
+  fi
+  sleep 0.4
+done
+if ! pactl info >/dev/null 2>&1; then
+  echo "[ArcadeCloud noVNC] PipeWire Pulse aún no responde" >&2
+  exit 1
+fi
+
+if available; then
+  echo "[ArcadeCloud noVNC] Sink virtual existente: $SINK"
+  exit 0
+fi
+
+if ! pactl load-module module-null-sink \
+    "sink_name=$SINK" \
+    "sink_properties=device.description=ArcadeCloud_noVNC" >/dev/null; then
+  echo "[ArcadeCloud noVNC] No se pudo crear el sink virtual" >&2
+  exit 1
+fi
+
+if ! available; then
+  echo "[ArcadeCloud noVNC] El sink no aparece tras cargar el módulo" >&2
+  exit 1
+fi
+
+echo "[ArcadeCloud noVNC] Sink virtual creado: $SINK"

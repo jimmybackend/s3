@@ -13,6 +13,7 @@ final class S3ObjectCopyService
 
     public function copy(string $sourceKey, string $destinationKey): void
     {
+        StorageObjectNameCodec::assertS3KeyLength($destinationKey);
         $source = $this->s3->headObject(['Bucket' => $this->bucket, 'Key' => $sourceKey]);
         if ((int)$source['ContentLength'] <= 5 * 1024 * 1024 * 1024) {
             $params = [

@@ -70,6 +70,14 @@
       errorCode: audio.error ? audio.error.code : 0,
       lastError
     });
+    // Permitimos consultar el diagnóstico desde la consola de la página
+    // Office exterior sin tener que seleccionar manualmente el iframe.
+    if (parent) {
+      try {
+        parent.__arcadecloudOfficeAudioDiagnostics =
+          window.__arcadecloudAudioDiagnostics;
+      } catch (_) { /* cross-origin: no exponer estado */ }
+    }
 
     function tryStart(fromGesture) {
       if (closed || playing) return;

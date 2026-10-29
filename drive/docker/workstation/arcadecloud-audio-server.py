@@ -102,6 +102,9 @@ class Handler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-Type", "audio/mpeg")
             self.send_header("Cache-Control", "no-store, no-transform")
+            # Dos proxies Nginx separan el navegador de FFmpeg.
+            # Prohibir el buffering también desde la respuesta upstream.
+            self.send_header("X-Accel-Buffering", "no")
             self.send_header("X-Content-Type-Options", "nosniff")
             self.send_header("Access-Control-Allow-Origin", "none")
             self.send_header("Connection", "close")

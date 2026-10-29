@@ -133,7 +133,10 @@ if [[ "$ENABLE_ON_PASS" -eq 1 ]]; then
   echo "=== INSTALANDO PERFIL REVISADO (NO REINICIA OFFICE) ==="
   profile=/etc/arcadecloud-drive/chrome-seccomp.json
   marker=/etc/arcadecloud-drive/chrome-sandbox-enabled
-  install -d -m 0750 /etc/arcadecloud-drive
+  if [[ ! -d /etc/arcadecloud-drive ]]; then
+    echo "ERROR: falta el directorio existente de configuración de ArcadeCloud." >&2
+    exit 3
+  fi
   install -o root -g root -m 0644 "$temp_dir/office-trial.json" "$profile"
   hash="$(sha256sum "$profile" | awk '{print $1}')"
   temporary_marker="$(mktemp /etc/arcadecloud-drive/.chrome-sandbox-enabled.XXXXXXXX)"

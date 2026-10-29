@@ -33,6 +33,7 @@ assert 'PRUEBA APROBADA' in trial
 assert trial.index('PRUEBA APROBADA') < trial.index('if [[ "$ENABLE_ON_PASS" -eq 1 ]]')
 assert 'install -o root -g root -m 0644' in trial
 assert "sha256sum" in trial
+assert "install -d -m " not in trial, "No modificar permisos del directorio de configuracion"
 assert "seccomp=unconfined" not in installer
 assert "ARCADECLOUD_CHROME_SANDBOX_ENABLED=1" not in rollback
 assert "rm -f /etc/arcadecloud-drive/chrome-sandbox-enabled" in rollback

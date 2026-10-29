@@ -4,35 +4,41 @@ declare(strict_types=1);
 $root = dirname(__DIR__);
 $gateway = (string)file_get_contents($root . '/office-gateway.php');
 $novnc = (string)file_get_contents($root . '/docker/workstation/arcadecloud-audio.js');
+$entry = (string)file_get_contents($root . '/docker/workstation/entrypoint.sh');
+$audioServer = (string)file_get_contents($root . '/docker/workstation/arcadecloud-audio-server.py');
 
-$check = static function (bool $ok, string $msg): void {
+$check = static function (bool $ok, string $message): void {
     if (!$ok) {
-        fwrite(STDERR, "ERROR: $msg\n");
+        fwrite(STDERR, "ERROR: $message\n");
         exit(1);
     }
-    echo "OK: $msg\n";
+    echo "OK: $message\n";
 };
-$check(str_contains($gateway, "officeAudioToggle"), 'Office gateway ofrece un control de audio');
-$check(str_contains($gateway, "\$officeDesktopTarget !== 'guacamole'"),
-    'El control MP3 no duplica el audio propio de Guacamole');
-$check(str_contains($gateway, "player.src = '/__office_audio?session='"),
-    'Audio Office utiliza el mismo endpoint protegido');
-$check(str_contains($gateway, "officeAudioToggle.addEventListener('click'"),
-    'Reproducción requiere interacción del usuario');
-$check(str_contains($gateway, "window.addEventListener('pagehide', stopAudio"),
-    'La reproducción termina al cerrar Office');
-$check(str_contains($novnc, "window.parent.document.getElementById('officeAudioToggle')"),
-    'noVNC evita doble audio cuando el gateway tiene botón');
-$check(str_contains($gateway, 'id="officeAudioTest"')
-    && str_contains($gateway, 'new AudioCtx()'),
-    'Office permite comprobar localmente la salida de audifonos');
-$check(str_contains($gateway, "player.controls = true;")
-    && str_contains($gateway, "player.addEventListener('playing'")
-    && str_contains($gateway, "player.addEventListener('stalled'"),
-    'Office expone controles nativos y estado de reproduccion');
-$check(str_contains($novnc, 'arcadecloud-audio-test')
-    && str_contains($novnc, "audio.controls = true;")
-    && str_contains($novnc, "parentToggle.style.display = 'none'"),
-    'noVNC conserva diagnostico incluso con gateway publico anterior');
-
-echo "Office gateway audio controls passed.\n";
+$check(!str_contains($gateway, 'id="officeAudioToggle"')
+    && !str_contains($gateway, 'id="officeAudioTest"')
+    && !str_contains($gateway, 'new Audio();'),
+    'No hay botones ni segunda captura de audio en el gateway Office');
+$check(str_contains($novnc, 'window.__arcadecloudAudioInstalled'),
+    'noVNC instala un solo controlador de audio por documento');
+$check(str_contains($novnc, "audio.src = '/__office_audio?session='")
+    && str_contains($novnc, 'tryStart();'),
+    'Audio noVNC intenta iniciar solo cuando navegador lo autoriza');
+$check(str_contains($novnc, "error.name === 'NotAllowedError'")
+    && str_contains($novnc, "document.addEventListener('pointerdown'")
+    && str_contains($novnc, "document.addEventListener('keydown'"),
+    'Si autoplay es bloqueado, sonido inicia tras interacción normal');
+$check(str_contains($novnc, "prior.style.display = 'none'")
+    && str_contains($novnc, "test.style.display = 'none'"),
+    'NoVNC oculta ambos botones del gateway público anterior');
+$check(!str_contains($novnc, 'createOscillator')
+    && !str_contains($novnc, 'document.body.appendChild(button)')
+    && !str_contains($novnc, 'document.body.appendChild(test)'),
+    'Ya no se emiten tonos de prueba ni controles flotantes');
+$check(str_contains($novnc, "window.addEventListener('pagehide'"),
+    'Se cierra el flujo cuando termina la sesión noVNC');
+$check(str_contains($entry, 'arcadecloud-audio.js')
+    && str_contains($audioServer, 'X-Accel-Buffering'),
+    'Audio automático mantiene el proxy de streaming protegido');
+$check(str_contains($gateway, "allow=\"microphone; autoplay; clipboard-read; clipboard-write\""),
+    'El iframe permite autoplay sujeto a política del navegador');
+echo "Office audio: un flujo, sin botones flotantes, con gesto de respaldo.\n";

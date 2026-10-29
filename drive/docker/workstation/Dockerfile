@@ -41,6 +41,7 @@ COPY repair-chrome-launchers.py /usr/local/bin/repair-chrome-launchers.py
 COPY arcadecloud-chrome-unlock.py /usr/local/bin/arcadecloud-chrome-unlock.py
 COPY arcadecloud-audio-server.py /usr/local/bin/arcadecloud-audio-server
 COPY arcadecloud-audio-ensure-sink /usr/local/bin/arcadecloud-audio-ensure-sink
+COPY arcadecloud-audio-bootstrap /usr/local/bin/arcadecloud-audio-bootstrap
 # Null sink is loaded by pipewire-pulse even if Guacamole never starts.
 COPY 10-arcadecloud-novnc.conf /etc/pipewire/pipewire-pulse.conf.d/10-arcadecloud-novnc.conf
 COPY arcadecloud-audio.js /usr/share/novnc/arcadecloud-audio.js
@@ -50,7 +51,7 @@ COPY arcadecloud-office-document /usr/local/bin/arcadecloud-office-document
 COPY arcadecloud-chrome-helper.desktop /usr/share/xfce4/helpers/arcadecloud-chrome.desktop
 COPY arcadecloud-chrome.desktop /usr/share/applications/arcadecloud-chrome.desktop
 RUN chown root:root /etc/pam.d/kde && chmod 0644 /etc/pam.d/kde
-RUN chmod 0755 /usr/local/bin/arcadecloud-workstation-entrypoint /usr/local/bin/arcadecloud-chrome /usr/local/bin/arcadecloud-office-document /usr/local/bin/arcadecloud-audio-server /usr/local/bin/arcadecloud-audio-ensure-sink /usr/local/bin/repair-chrome-launchers.py /usr/local/bin/arcadecloud-xfce-wallpaper \
+RUN chmod 0755 /usr/local/bin/arcadecloud-workstation-entrypoint /usr/local/bin/arcadecloud-chrome /usr/local/bin/arcadecloud-office-document /usr/local/bin/arcadecloud-audio-server /usr/local/bin/arcadecloud-audio-ensure-sink /usr/local/bin/arcadecloud-audio-bootstrap /usr/local/bin/repair-chrome-launchers.py /usr/local/bin/arcadecloud-xfce-wallpaper \
  && chmod 0644 /usr/share/xfce4/helpers/arcadecloud-chrome.desktop /usr/share/applications/arcadecloud-chrome.desktop
 
 WORKDIR /home/arcade

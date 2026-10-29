@@ -456,6 +456,8 @@ button{width:100%;margin-top:12px;padding:13px;border:1px solid var(--accent);bo
 .office-idle-status{position:fixed;z-index:40;right:140px;bottom:60px;max-width:calc(100vw - 24px);padding:7px 11px;border:1px solid #2d6784;border-radius:9px;background:#061726e8;color:#ccecff;font-size:12px;box-shadow:0 6px 24px #0007;pointer-events:none}
 @media(max-width:600px){.office-idle-status{right:12px;bottom:60px;font-size:11px}}
 .office-idle-status.is-paused{border-color:#d49935;color:#ffd993}
+.office-audio-toggle{position:fixed;z-index:55;left:12px;bottom:65px;width:auto;max-width:min(260px,75vw);margin:0;padding:8px 12px;border:1px solid #476f85;border-radius:10px;background:#071725ef;color:#eaf7ff;font-size:13px;font-weight:600;box-shadow:0 4px 16px #0008}
+.office-audio-toggle:focus-visible{outline:2px solid #61f29b;outline-offset:2px}
 </style>
 </head>
 <body>
@@ -467,6 +469,9 @@ button{width:100%;margin-top:12px;padding:13px;border:1px solid var(--accent);bo
   </div>
   <?php endif; ?>
   <div class="office-idle-status" id="officeIdleStatus">Autoapagado listo · esperando inactividad</div>
+  <?php if ($officeDesktopTarget !== 'guacamole'): ?>
+  <button type="button" class="office-audio-toggle" id="officeAudioToggle" aria-pressed="false">🔊 Activar sonido</button>
+  <?php endif; ?>
   <iframe id="officeFrame"
           src="<?= $officeDesktopTarget === 'guacamole' ? '/guacamole/' : '/vnc.html?path=websockify&amp;resize=remote&amp;autoconnect=true' ?>"
           title="<?= $officeDesktopTarget === 'kde' ? 'ArcadeCloud KDE Plasma' : ($officeDesktopTarget === 'guacamole' ? 'ArcadeCloud Guacamole RDP' : 'ArcadeCloud Office') ?>"
@@ -493,6 +498,48 @@ button{width:100%;margin-top:12px;padding:13px;border:1px solid var(--accent);bo
   const hasDocument = <?= ($officeFileId > 0 && preg_match('/^[a-f0-9]{32}$/', $officeDocumentSessionId)) ? 'true' : 'false' ?>;
   const documentBadge = document.getElementById('officeDocumentBadge');
   const idleStatus = document.getElementById('officeIdleStatus');
+  const officeAudioToggle = document.getElementById('officeAudioToggle');
+  if (officeAudioToggle) {
+    // El control permanece en Office (fuera del iframe noVNC).
+    // El navegador sólo reproduce audio tras pulsación del usuario.
+    const player = new Audio();
+    player.preload = 'none';
+    let listening = false;
+    const stopAudio = () => {
+      listening = false;
+      player.pause();
+      player.removeAttribute('src');
+      player.load();
+      officeAudioToggle.textContent = '🔊 Activar sonido';
+      officeAudioToggle.setAttribute('aria-pressed', 'false');
+    };
+    officeAudioToggle.addEventListener('click', async () => {
+      if (listening) {
+        stopAudio();
+        return;
+      }
+      listening = true;
+      player.src = '/__office_audio?session=' + Date.now();
+      officeAudioToggle.textContent = 'Conectando sonido…';
+      try {
+        await player.play();
+        if (listening) {
+          officeAudioToggle.textContent = '🔇 Silenciar sonido';
+          officeAudioToggle.setAttribute('aria-pressed', 'true');
+        }
+      } catch (error) {
+        stopAudio();
+        officeAudioToggle.textContent = 'Sonido no disponible · reintentar';
+        console.warn('[ArcadeCloud Office audio]', error);
+      }
+    });
+    player.addEventListener('error', () => {
+      if (!listening) return;
+      stopAudio();
+      officeAudioToggle.textContent = 'Sonido desconectado · reintentar';
+    });
+    window.addEventListener('pagehide', stopAudio, {once: true});
+  }
 
   function formatIdle(seconds) {
     const value = Math.max(0, Math.floor(Number(seconds || 0)));

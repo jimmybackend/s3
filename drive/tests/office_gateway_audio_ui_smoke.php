@@ -23,10 +23,19 @@ $check(str_contains($novnc, 'window.__arcadecloudAudioInstalled'),
 $check(str_contains($novnc, "audio.src = '/__office_audio?session='")
     && str_contains($novnc, 'tryStart();'),
     'Audio noVNC intenta iniciar solo cuando navegador lo autoriza');
-$check(str_contains($novnc, "error.name === 'NotAllowedError'")
+$check(str_contains($novnc, "lastError === 'NotAllowedError'")
     && str_contains($novnc, "document.addEventListener('pointerdown'")
     && str_contains($novnc, "document.addEventListener('keydown'"),
     'Si autoplay es bloqueado, sonido inicia tras interacción normal');
+$check(str_contains($novnc, 'const thisAttempt = ++attempt;')
+    && str_contains($novnc, 'thisAttempt !== attempt')
+    && str_contains($novnc, "function tryStart(fromGesture)")
+    && !str_contains($novnc, 'if (closed || playing || starting) return;'),
+    'Un play() pendiente no bloquea los clics posteriores ni cancela un intento reciente');
+$check(str_contains($novnc, '__arcadecloudOfficeAudioDiagnostics')
+    && str_contains($novnc, 'networkState: audio.networkState')
+    && str_contains($novnc, 'errorCode: audio.error'),
+    'Diagnóstico de audio disponible sin mostrar credenciales');
 $check(str_contains($novnc, "prior.style.display = 'none'")
     && str_contains($novnc, "test.style.display = 'none'"),
     'NoVNC oculta ambos botones del gateway público anterior');

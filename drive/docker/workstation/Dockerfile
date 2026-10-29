@@ -39,10 +39,11 @@ COPY arcadecloud-chrome-unlock.py /usr/local/bin/arcadecloud-chrome-unlock.py
 COPY arcadecloud-audio-server.py /usr/local/bin/arcadecloud-audio-server
 COPY arcadecloud-audio.js /usr/share/novnc/arcadecloud-audio.js
 COPY arcadecloud-chrome /usr/local/bin/arcadecloud-chrome
+COPY arcadecloud-xfce-wallpaper /usr/local/bin/arcadecloud-xfce-wallpaper
 COPY arcadecloud-office-document /usr/local/bin/arcadecloud-office-document
 COPY arcadecloud-chrome-helper.desktop /usr/share/xfce4/helpers/arcadecloud-chrome.desktop
 COPY arcadecloud-chrome.desktop /usr/share/applications/arcadecloud-chrome.desktop
-RUN chmod 0755 /usr/local/bin/arcadecloud-workstation-entrypoint /usr/local/bin/arcadecloud-chrome /usr/local/bin/arcadecloud-office-document /usr/local/bin/arcadecloud-audio-server /usr/local/bin/repair-chrome-launchers.py \
+RUN chmod 0755 /usr/local/bin/arcadecloud-workstation-entrypoint /usr/local/bin/arcadecloud-chrome /usr/local/bin/arcadecloud-office-document /usr/local/bin/arcadecloud-audio-server /usr/local/bin/repair-chrome-launchers.py /usr/local/bin/arcadecloud-xfce-wallpaper \
  && chmod 0644 /usr/share/xfce4/helpers/arcadecloud-chrome.desktop /usr/share/applications/arcadecloud-chrome.desktop
 
 WORKDIR /home/arcade

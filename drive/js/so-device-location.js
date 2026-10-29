@@ -3,6 +3,8 @@
  */
 (() => {
   'use strict';
+  class ArcadeCloudDeviceLocation {
+    static boot() {
   const card = document.querySelector('#nodeWindow [data-device-location]');
   if (!card) return;
   const platform = card.querySelector('[data-device-platform]');
@@ -42,4 +44,7 @@
       button.disabled = false;
     }, { enableHighAccuracy: false, maximumAge: 60000, timeout: 12000 });
   });
+    }
+  }
+  ArcadeCloudDeviceLocation.boot();
 })();

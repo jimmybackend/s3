@@ -186,20 +186,20 @@ if page.exists():
     content = page.read_text(encoding="utf-8")
     marker = '<script src="/arcadecloud-audio.js?v=office-audio-bootstrap-20261029"></script>'
     prior = re.compile(
-        r'<script\\s+[^>]*src=["\\']/arcadecloud-audio\\.js(?:\\?[^"\\']*)?["\\'][^>]*>\\s*</script>',
+        r"""<script\s+[^>]*src=["']/arcadecloud-audio\.js(?:\?[^"']*)?["'][^>]*>\s*</script>""",
         re.IGNORECASE,
     )
-    # Reemplazar una única referencia anterior y evitar duplicar controles.
+    # Mantener solamente una referencia al reproductor al reiniciar.
     updated, count = prior.subn(marker, content, count=1)
     if not count:
         updated, count = re.subn(
-            r'</body\\s*>', marker + "\\n</body>", content, count=1,
+            r"</body\s*>", marker + "\n</body>", content, count=1,
             flags=re.IGNORECASE,
         )
     if count and updated != content:
         page.write_text(updated, encoding="utf-8")
     elif not count:
-        print("AVISO: noVNC no incluye cierre de body; Office gateway cargará el audio.", flush=True)
+        print("AVISO: noVNC sin cierre de body; Office gateway cargará el audio.", flush=True)
 PY
 
 dbus-daemon --system --fork 2>/dev/null || true

@@ -293,6 +293,7 @@ final class OfficeDocumentStorageService
         $route = $this->app->fileRecordRepository()->normalizePrefix((string)($row['Ruta'] ?? ''));
         $encrypted = $this->app->storageObjectNameCodec()->createFileObjectName($conflictName);
         $conflictKey = $route . $encrypted;
+        \ArcadeCloud\Drive\Storage\StorageObjectNameCodec::assertS3KeyLength($conflictKey);
 
         $stream = $this->stableWorkspaceStream($target, $digest);
         if (!is_resource($stream)) {

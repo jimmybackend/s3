@@ -36,6 +36,7 @@ final class PublicDropzoneUploadService
         $prefix = $this->normalizePrefix($requestedPrefix);
         $physicalName = $this->codec->createFileObjectName($nameOrig);
         $key = $prefix . $physicalName;
+        StorageObjectNameCodec::assertS3KeyLength($key);
 
         $sha256 = (string)(hash_file('sha256', $tmpPath) ?: '');
         if ($sha256 === '') {

@@ -1,16 +1,16 @@
 {
   "summary": {
-    "php_total": 568,
-    "php_class_modules": 320,
+    "php_total": 605,
+    "php_class_modules": 332,
     "php_needs_migration": 0,
-    "php_tests": 82,
-    "js_total": 90,
-    "js_class_modules": 83,
+    "php_tests": 100,
+    "js_total": 97,
+    "js_class_modules": 89,
     "js_needs_migration": 0,
-    "js_tests": 12,
+    "js_tests": 13,
     "js_compatibility_facades": 8,
-    "ajax_clients": 57,
-    "ajax_calls": 123,
+    "ajax_clients": 60,
+    "ajax_calls": 127,
     "json_total": 10,
     "json_invalid": 0
   },
@@ -63,6 +63,21 @@
     {
       "path": "drive/actualizar_ruta.php",
       "lines": 10,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/api/native.php",
+      "lines": 8,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -528,6 +543,21 @@
       "issues": []
     },
     {
+      "path": "drive/bin/upload_task_reconcile.php",
+      "lines": 21,
+      "kind": "thin cli entrypoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/bin/workstation_health.php",
       "lines": 35,
       "kind": "thin cli entrypoint",
@@ -544,7 +574,7 @@
     },
     {
       "path": "drive/bloque_archivos.php",
-      "lines": 719,
+      "lines": 727,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -687,7 +717,7 @@
     },
     {
       "path": "drive/dataword3d.php",
-      "lines": 563,
+      "lines": 564,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -1614,8 +1644,23 @@
       "issues": []
     },
     {
+      "path": "drive/image-rotate.php",
+      "lines": 10,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/index.php",
-      "lines": 509,
+      "lines": 559,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -1661,8 +1706,23 @@
       "issues": []
     },
     {
+      "path": "drive/login-error.php",
+      "lines": 7,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/login.php",
-      "lines": 93,
+      "lines": 99,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -1732,6 +1792,40 @@
       "s3": false,
       "bootstrap": true,
       "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/mobile-capture-upload.php",
+      "lines": 75,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [
+        "FILES",
+        "POST",
+        "SERVER"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/mobile_capture.php",
+      "lines": 66,
+      "kind": "view/entrypoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": true,
       "namespace": false,
       "issues": []
     },
@@ -1861,7 +1955,7 @@
     },
     {
       "path": "drive/office-gateway.php",
-      "lines": 674,
+      "lines": 675,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -1880,7 +1974,7 @@
     },
     {
       "path": "drive/office-launch.php",
-      "lines": 81,
+      "lines": 86,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -2124,7 +2218,7 @@
     },
     {
       "path": "drive/s3.php",
-      "lines": 2371,
+      "lines": 2372,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -2219,7 +2313,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 2271,
+      "lines": 2373,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -2233,6 +2327,21 @@
       "bootstrap": true,
       "html": true,
       "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Activity/AccountingProfile.php",
+      "lines": 35,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
       "issues": []
     },
     {
@@ -2252,7 +2361,7 @@
     },
     {
       "path": "drive/src/Activity/ActivityCostRepository.php",
-      "lines": 198,
+      "lines": 255,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2267,7 +2376,7 @@
     },
     {
       "path": "drive/src/Activity/ActivityCostService.php",
-      "lines": 153,
+      "lines": 185,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2297,7 +2406,7 @@
     },
     {
       "path": "drive/src/Activity/AwsUnitPriceCatalog.php",
-      "lines": 89,
+      "lines": 111,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2349,6 +2458,21 @@
       "session": false,
       "superglobals": [],
       "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Activity/UserAwsAccounting.php",
+      "lines": 106,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
       "s3": false,
       "bootstrap": false,
       "html": false,
@@ -2436,7 +2560,7 @@
     },
     {
       "path": "drive/src/Admin/ManagedRuntimeEnvironment.php",
-      "lines": 374,
+      "lines": 380,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2680,7 +2804,7 @@
     },
     {
       "path": "drive/src/Application/FileListService.php",
-      "lines": 157,
+      "lines": 194,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2784,6 +2908,36 @@
       "issues": []
     },
     {
+      "path": "drive/src/Application/NativeDrivePolicy.php",
+      "lines": 38,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Application/NativeDriveService.php",
+      "lines": 41,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Application/PhpLintService.php",
       "lines": 70,
       "kind": "class/module",
@@ -2855,6 +3009,40 @@
       "s3": false,
       "bootstrap": false,
       "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Application/ZipExplorerService.php",
+      "lines": 27,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [
+        "GET"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Application/ZipLambdaExplorerService.php",
+      "lines": 187,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [
+        "GET"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": true,
       "namespace": true,
       "issues": []
     },
@@ -3310,7 +3498,7 @@
     },
     {
       "path": "drive/src/Core/DriveApplication.php",
-      "lines": 500,
+      "lines": 504,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3512,6 +3700,21 @@
       "session": false,
       "superglobals": [],
       "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationDownloadAuditRepository.php",
+      "lines": 109,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
       "s3": false,
       "bootstrap": false,
       "html": false,
@@ -3805,7 +4008,7 @@
     },
     {
       "path": "drive/src/Federation/FederationEventStore.php",
-      "lines": 288,
+      "lines": 304,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4495,7 +4698,7 @@
     },
     {
       "path": "drive/src/Http/Controller/AuthController.php",
-      "lines": 119,
+      "lines": 99,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4555,7 +4758,7 @@
     },
     {
       "path": "drive/src/Http/Controller/BackgroundTaskController.php",
-      "lines": 1100,
+      "lines": 1104,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4842,7 +5045,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FileAccessController.php",
-      "lines": 145,
+      "lines": 149,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4961,6 +5164,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/Http/Controller/ImageRotationController.php",
+      "lines": 70,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Http/Controller/LegacyUploadController.php",
       "lines": 154,
       "kind": "class/module",
@@ -4972,6 +5190,23 @@
       "s3": false,
       "bootstrap": false,
       "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Http/Controller/LoginErrorController.php",
+      "lines": 87,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "SESSION"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": true,
       "namespace": true,
       "issues": []
     },
@@ -5008,6 +5243,21 @@
     {
       "path": "drive/src/Http/Controller/MoveJobController.php",
       "lines": 205,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Http/Controller/NativeDriveController.php",
+      "lines": 86,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5277,7 +5527,7 @@
     },
     {
       "path": "drive/src/Http/Controller/UploadController.php",
-      "lines": 392,
+      "lines": 401,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5448,7 +5698,7 @@
     },
     {
       "path": "drive/src/Media/MediaWorkerNodeService.php",
-      "lines": 900,
+      "lines": 916,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5478,7 +5728,7 @@
     },
     {
       "path": "drive/src/Media/ThumbnailService.php",
-      "lines": 559,
+      "lines": 658,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5732,8 +5982,26 @@
       "issues": []
     },
     {
+      "path": "drive/src/Security/LoginPageGuard.php",
+      "lines": 42,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "SERVER",
+        "SESSION"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Security/LoginRateLimiter.php",
-      "lines": 143,
+      "lines": 164,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5810,7 +6078,7 @@
     },
     {
       "path": "drive/src/Security/SessionManager.php",
-      "lines": 181,
+      "lines": 200,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6149,7 +6417,7 @@
     },
     {
       "path": "drive/src/Storage/FolderRepository.php",
-      "lines": 132,
+      "lines": 143,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6374,7 +6642,7 @@
     },
     {
       "path": "drive/src/System/NodeCapabilityService.php",
-      "lines": 255,
+      "lines": 256,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6389,7 +6657,7 @@
     },
     {
       "path": "drive/src/System/NodeRuntimeStatusService.php",
-      "lines": 509,
+      "lines": 515,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6553,8 +6821,23 @@
       "issues": []
     },
     {
+      "path": "drive/src/Upload/UploadTaskReconciler.php",
+      "lines": 78,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Upload/UploadTaskStore.php",
-      "lines": 174,
+      "lines": 212,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6569,7 +6852,7 @@
     },
     {
       "path": "drive/src/View/ActivityCostPageRenderer.php",
-      "lines": 401,
+      "lines": 560,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6913,8 +7196,23 @@
       "issues": []
     },
     {
+      "path": "drive/tests/accounting_profile_smoke.php",
+      "lines": 22,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/tests/activity_costs_smoke.php",
-      "lines": 150,
+      "lines": 217,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -6972,6 +7270,23 @@
       "functions": [
         "collectionSource",
         "expectCollection"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/aws_cost_attribution_safety_smoke.php",
+      "lines": 26,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "assertCost"
       ],
       "session": false,
       "superglobals": [],
@@ -7243,6 +7558,23 @@
       "issues": []
     },
     {
+      "path": "drive/tests/federation_download_audit_contract_smoke.php",
+      "lines": 23,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "auditCheck"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/tests/federation_drop_contract_smoke.php",
       "lines": 115,
       "kind": "test script",
@@ -7438,6 +7770,21 @@
       "functions": [
         "replicaOk"
       ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/federation_sequence_allocator_contract.php",
+      "lines": 50,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
       "session": false,
       "superglobals": [],
       "db": false,
@@ -7666,6 +8013,23 @@
       "issues": []
     },
     {
+      "path": "drive/tests/login_lockout_regression.php",
+      "lines": 77,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "checkLogin"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/tests/media_processing_contract_smoke.php",
       "lines": 189,
       "kind": "test script",
@@ -7700,6 +8064,104 @@
       "issues": []
     },
     {
+      "path": "drive/tests/mobile_capture_contract_smoke.php",
+      "lines": 33,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/native_api_authorization_regression.php",
+      "lines": 81,
+      "kind": "test script",
+      "classes": 3,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/native_authentication_regression.php",
+      "lines": 65,
+      "kind": "test script",
+      "classes": 1,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "SESSION"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/native_drive_policy_regression.php",
+      "lines": 36,
+      "kind": "test script",
+      "classes": 1,
+      "functions": [
+        "check"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/native_session_revocation_regression.php",
+      "lines": 30,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "nativeSessionCheck"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/native_zip_json_authorization.php",
+      "lines": 57,
+      "kind": "test script",
+      "classes": 2,
+      "functions": [],
+      "session": false,
+      "superglobals": [
+        "GET"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/tests/node_diagnostics_contract_smoke.php",
       "lines": 62,
       "kind": "test script",
@@ -7724,6 +8186,21 @@
       "functions": [
         "nodeContract"
       ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/node_mysql_monitor_contract_smoke.php",
+      "lines": 27,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
       "session": false,
       "superglobals": [],
       "db": false,
@@ -7767,12 +8244,27 @@
     },
     {
       "path": "drive/tests/office_gateway_contract_smoke.php",
-      "lines": 376,
+      "lines": 375,
       "kind": "test script",
       "classes": 0,
       "functions": [
         "officeGatewayContract"
       ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/office_kde_chrome_launch_smoke.php",
+      "lines": 40,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
       "session": false,
       "superglobals": [],
       "db": false,
@@ -8054,6 +8546,53 @@
       "issues": []
     },
     {
+      "path": "drive/tests/upload_task_reconcile_contract.php",
+      "lines": 40,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/upload_task_terminal_regression.php",
+      "lines": 26,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/user_aws_accounting_smoke.php",
+      "lines": 35,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "ensure"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/tests/user_identity_presenter_smoke.php",
       "lines": 30,
       "kind": "test script",
@@ -8100,7 +8639,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 686,
+      "lines": 688,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -8245,6 +8784,36 @@
       "functions": [
         "workstationContract"
       ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/zip_lambda_integration_contract_smoke.php",
+      "lines": 12,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/zip_large_archive_contract_smoke.php",
+      "lines": 23,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
       "session": false,
       "superglobals": [],
       "db": false,
@@ -8724,9 +9293,47 @@
       "html": false,
       "namespace": false,
       "issues": []
+    },
+    {
+      "path": "drive/zip_explorer.php",
+      "lines": 5,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
     }
   ],
   "js": [
+    {
+      "path": "drive/docker/workstation/arcadecloud-audio.js",
+      "lines": 74,
+      "kind": "class/module",
+      "classes": [
+        "ArcadeCloudOfficeAudio"
+      ],
+      "functions": [],
+      "window_assign": [
+        "__arcadecloudAudioInstalled"
+      ],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
+      },
+      "issues": []
+    },
     {
       "path": "drive/js/actualizar-hora.js",
       "lines": 36,
@@ -8950,7 +9557,7 @@
     },
     {
       "path": "drive/js/background-tasks.js",
-      "lines": 1364,
+      "lines": 1467,
       "kind": "class/module",
       "classes": [
         "BackgroundTaskCenter"
@@ -8970,13 +9577,13 @@
         "xhr": 0,
         "jquery": 0,
         "json_consumers": 0,
-        "response_checks": 19
+        "response_checks": 20
       },
       "issues": []
     },
     {
       "path": "drive/js/carpetas.js",
-      "lines": 1200,
+      "lines": 1208,
       "kind": "class/module",
       "classes": [
         "CarpetasModule"
@@ -9035,7 +9642,7 @@
     },
     {
       "path": "drive/js/dataword3d.js",
-      "lines": 2085,
+      "lines": 2107,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudDrive3D"
@@ -9100,7 +9707,7 @@
     },
     {
       "path": "drive/js/desktop-shell.js",
-      "lines": 182,
+      "lines": 189,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudDesktopShell"
@@ -9173,7 +9780,7 @@
     },
     {
       "path": "drive/js/drive3d-scene.js",
-      "lines": 1204,
+      "lines": 1233,
       "kind": "class/module",
       "classes": [
         "Drive3DScene"
@@ -9485,7 +10092,7 @@
     },
     {
       "path": "drive/js/file-applications.js",
-      "lines": 243,
+      "lines": 305,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudFileApplicationService"
@@ -9498,11 +10105,11 @@
       "top_vars": [],
       "iife": false,
       "ajax": {
-        "fetch": 0,
+        "fetch": 1,
         "xhr": 0,
         "jquery": 0,
-        "json_consumers": 0,
-        "response_checks": 0
+        "json_consumers": 1,
+        "response_checks": 2
       },
       "issues": []
     },
@@ -9555,7 +10162,7 @@
     },
     {
       "path": "drive/js/filesystem-operations.js",
-      "lines": 192,
+      "lines": 196,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudFilesystemOperations"
@@ -9659,6 +10266,29 @@
       ]
     },
     {
+      "path": "drive/js/login-cooldown.js",
+      "lines": 26,
+      "kind": "class/module",
+      "classes": [
+        "LoginCooldown"
+      ],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [
+        "loginCooldownRoot"
+      ],
+      "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
+      },
+      "issues": []
+    },
+    {
       "path": "drive/js/media-floating.js",
       "lines": 696,
       "kind": "class/module",
@@ -9722,6 +10352,27 @@
         "jquery": 0,
         "json_consumers": 0,
         "response_checks": 0
+      },
+      "issues": []
+    },
+    {
+      "path": "drive/js/mobile-capture.js",
+      "lines": 166,
+      "kind": "class/module",
+      "classes": [
+        "ArcadeCloudMobileCapture"
+      ],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "ajax": {
+        "fetch": 1,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 1,
+        "response_checks": 2
       },
       "issues": []
     },
@@ -10092,7 +10743,7 @@
     },
     {
       "path": "drive/js/so-appearance.js",
-      "lines": 165,
+      "lines": 168,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsAppearance"
@@ -10115,7 +10766,7 @@
     },
     {
       "path": "drive/js/so-clipboard.js",
-      "lines": 922,
+      "lines": 927,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsClipboard"
@@ -10131,6 +10782,27 @@
         "jquery": 0,
         "json_consumers": 1,
         "response_checks": 2
+      },
+      "issues": []
+    },
+    {
+      "path": "drive/js/so-device-location.js",
+      "lines": 51,
+      "kind": "class/module",
+      "classes": [
+        "ArcadeCloudDeviceLocation"
+      ],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
       },
       "issues": []
     },
@@ -10158,8 +10830,31 @@
       "issues": []
     },
     {
+      "path": "drive/js/so-folder-recorder.js",
+      "lines": 496,
+      "kind": "class/module",
+      "classes": [
+        "ArcadeCloudFolderRecorder"
+      ],
+      "functions": [],
+      "window_assign": [
+        "ArcadeCloudFolderRecorder"
+      ],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
+      },
+      "issues": []
+    },
+    {
       "path": "drive/js/so-folders.js",
-      "lines": 494,
+      "lines": 607,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsFolderActions"
@@ -10203,7 +10898,7 @@
     },
     {
       "path": "drive/js/so-node.js",
-      "lines": 513,
+      "lines": 563,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsNodeMonitor"
@@ -10294,7 +10989,7 @@
     },
     {
       "path": "drive/js/so-share.js",
-      "lines": 180,
+      "lines": 290,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsShare"
@@ -10307,11 +11002,11 @@
       "top_vars": [],
       "iife": false,
       "ajax": {
-        "fetch": 1,
+        "fetch": 2,
         "xhr": 0,
         "jquery": 0,
-        "json_consumers": 0,
-        "response_checks": 1
+        "json_consumers": 1,
+        "response_checks": 2
       },
       "issues": []
     },
@@ -10340,7 +11035,7 @@
     },
     {
       "path": "drive/js/so.js",
-      "lines": 1355,
+      "lines": 1513,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsShell"
@@ -10354,11 +11049,11 @@
       "top_vars": [],
       "iife": false,
       "ajax": {
-        "fetch": 1,
+        "fetch": 2,
         "xhr": 0,
         "jquery": 0,
-        "json_consumers": 0,
-        "response_checks": 1
+        "json_consumers": 1,
+        "response_checks": 3
       },
       "issues": []
     },
@@ -10520,7 +11215,7 @@
     },
     {
       "path": "drive/js/upload-center.js",
-      "lines": 1092,
+      "lines": 1289,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudUploadCenter"
@@ -10532,10 +11227,10 @@
       "iife": false,
       "ajax": {
         "fetch": 9,
-        "xhr": 2,
+        "xhr": 1,
         "jquery": 0,
         "json_consumers": 1,
-        "response_checks": 22
+        "response_checks": 28
       },
       "issues": []
     },
@@ -10611,6 +11306,29 @@
         "jquery": 0,
         "json_consumers": 0,
         "response_checks": 0
+      },
+      "issues": []
+    },
+    {
+      "path": "drive/js/video-poster-loader.js",
+      "lines": 148,
+      "kind": "class/module",
+      "classes": [
+        "VideoPosterLoader"
+      ],
+      "functions": [],
+      "window_assign": [
+        "ArcadeVideoPosters"
+      ],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "ajax": {
+        "fetch": 1,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 1
       },
       "issues": []
     },
@@ -10702,6 +11420,38 @@
         "response_checks": 0
       },
       "issues": []
+    },
+    {
+      "path": "drive/tests/login_cooldown_functional.js",
+      "lines": 33,
+      "kind": "procedural script",
+      "classes": [],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [
+        "fs",
+        "vm",
+        "assert",
+        "now",
+        "interval",
+        "reloaded",
+        "visibility",
+        "output",
+        "context"
+      ],
+      "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
+      },
+      "issues": [
+        "top-level state: fs, vm, assert, now, interval, reloaded, visibility, output",
+        "no ES class"
+      ]
     },
     {
       "path": "drive/tests/os_image_window_fit.test.js",
@@ -11030,7 +11780,7 @@
     },
     {
       "path": "drive/config/activity-cost-pricing.json",
-      "bytes": 1339,
+      "bytes": 1663,
       "valid": true,
       "root_type": "object",
       "keys": [
@@ -11090,7 +11840,7 @@
     },
     {
       "path": "tools/arcadecloud-aws-bridge/requests/auto.json",
-      "bytes": 163,
+      "bytes": 165,
       "valid": true,
       "root_type": "object",
       "keys": [

@@ -11,6 +11,9 @@ ENTRY = (ROOT / "docker/workstation/entrypoint.sh").read_text()
 DOCKERFILE = (ROOT / "docker/workstation/Dockerfile").read_text()
 
 assert "RDP_DISPLAY" in ENTRY
+assert "export PULSE_SINK=arcadecloud-web" in ENTRY
+assert "ARCADECLOUD_SESSION_TRANSPORT=novnc" in ENTRY
+assert "ARCADECLOUD_SESSION_TRANSPORT=xrdp" in ENTRY
 assert 'if [ "$RDP_DISPLAY" -ge 10 ]; then' in ENTRY
 assert '/usr/local/bin/arcadecloud-audio-ensure-sink' in ENTRY
 assert "COPY arcadecloud-audio-ensure-sink" in DOCKERFILE
@@ -41,7 +44,7 @@ esac
                    capture_output=True, text=True, timeout=12)
     log = calls.read_text()
     assert "load-module module-null-sink" in log
-    assert "set-default-sink arcadecloud-web" in log
+    assert "set-default-sink" not in log, "Nunca cambiar la salida global XRDP"
 
     calls.write_text("")
     subprocess.run(["bash", str(HELPER)], check=True, env=env,

@@ -36,6 +36,7 @@ RUN groupadd --gid 10001 arcade \
 # KScreenLocker expects PAM service 'kde' on Ubuntu minimal images.
 COPY pam-kde /etc/pam.d/kde
 COPY entrypoint.sh /usr/local/bin/arcadecloud-workstation-entrypoint
+COPY arcadecloud-kde-remote-sso.py /usr/local/bin/arcadecloud-kde-remote-sso.py
 COPY repair-chrome-launchers.py /usr/local/bin/repair-chrome-launchers.py
 COPY arcadecloud-chrome-unlock.py /usr/local/bin/arcadecloud-chrome-unlock.py
 COPY arcadecloud-audio-server.py /usr/local/bin/arcadecloud-audio-server

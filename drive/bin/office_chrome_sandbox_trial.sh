@@ -53,7 +53,7 @@ NAMESPACE_MASK = 0x7e020000
 NEW_USER = 0x10000000
 NEW_PID = 0x20000000
 for name in ("clone", "unshare"):
-    for flag in (NEW_USER, NEW_PID):
+    for flag in (NEW_USER, NEW_PID, NEW_USER | NEW_PID):
         rules.append({
             "names": [name],
             "action": "SCMP_ACT_ALLOW",

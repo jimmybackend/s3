@@ -19,15 +19,13 @@ if ($userId <= 0) {
     exit('No se pudo identificar al usuario actual.');
 }
 
-$officeUrl = trim((string)(getenv('ARCADECLOUD_OFFICE_URL') ?: 'https://office.esforzados.com/'));
-$parts = parse_url($officeUrl);
-if (
-    !is_array($parts)
-    || strtolower((string)($parts['scheme'] ?? '')) !== 'https'
-    || trim((string)($parts['host'] ?? '')) === ''
-) {
-    http_response_code(503);
-    exit('La URL de Office no está configurada correctamente.');
+// El launcher sólo acepta el gateway dedicado de Office. No redirigir
+// tokens de acceso a FastDrive ni a otros dominios por variables heredadas
+// del nodo. Mantener el intercambio autenticado por token de un solo uso.
+$officeUrl = 'https://office.esforzados.com/';
+$configuredOfficeUrl = trim((string)(getenv('ARCADECLOUD_OFFICE_URL') ?: ''));
+if ($configuredOfficeUrl !== '' && rtrim($configuredOfficeUrl, '/') !== rtrim($officeUrl, '/')) {
+    error_log('[Office launch] ARCADECLOUD_OFFICE_URL no coincide con el gateway Office; se usa el dominio dedicado.');
 }
 
 try {

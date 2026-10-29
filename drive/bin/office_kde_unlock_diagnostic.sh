@@ -25,21 +25,23 @@ echo "--- Sesiones KDE y bloqueador ---"
 ps -eo pid,ppid,user,comm | grep -E "kcheckpass|kscreenlocker|ksmserver|plasmashell|Xtigervnc|xrdp" || true
 
 echo "--- PAM: servicios relevantes (nombres de archivos) ---"
-for path in /etc/pam.d/kde /etc/pam.d/kscreenlocker /etc/pam.d/common-auth /etc/pam.d/login; do
+for path in /etc/pam.d/kde /usr/lib/pam.d/kde /etc/pam.d/kscreenlocker /etc/pam.d/common-auth /etc/pam.d/login /etc/pam.d/other; do
   if [[ -f "$path" ]]; then
     stat -c "%n permisos=%a propietario=%U:%G" "$path"
   else
     echo "NO EXISTE: $path"
   fi
 done
-echo "--- Programas KDE de validación (modo y propietario) ---"
-for path in /usr/lib/x86_64-linux-gnu/libexec/kcheckpass /usr/lib/kscreenlocker_greet /usr/libexec/kcheckpass /usr/libexec/kscreenlocker_greet; do
-  if [[ -e "$path" ]]; then
-    stat -c "%n %A propietario=%U:%G" "$path"
-    if command -v getcap >/dev/null 2>&1; then getcap "$path" || true; fi
-  fi
-done
-
+echo "--- Auxiliares reales KDE/PAM (modo y propietario) ---"
+# En Ubuntu noble kcheckpass puede residir en subdirectorios libexec
+# distintos. Detectar rutas verdaderas, no asumir una única ruta.
+find /usr/lib /usr/libexec /sbin /usr/sbin -xdev \
+  \( -name kcheckpass -o -name unix_chkpwd \) -type f \
+  -printf "%p %m %u:%g\n" 2>/dev/null | sort -u | head -n 24 || true
+echo "--- NoNewPrivs y acceso a /etc/shadow ---"
+stat -c "%n %A propietario=%U:%G" /etc/shadow 2>/dev/null || true
+echo "Si el auxiliar depende de setuid/setgid y NoNewPrivs=1,"
+echo "la elevación de privilegios no está permitida por el kernel."
 echo "--- NoNewPrivs en procesos del bloqueo ---"
 for pid in $(pgrep -u arcade -f "kscreenlocker|ksmserver" 2>/dev/null | head -n 8); do
   if [[ -r "/proc/$pid/status" ]]; then
@@ -62,4 +64,5 @@ grep -Ei "kcheckpass|kscreenlocker|pam_authenticate|pam_unix|authentication fail
 '
 echo "=== RESULTADO ==="
 echo "No se cambió ninguna contraseña ni se desactivó el bloqueo."
-echo "Si KDE no puede autenticar, revisar PAM y los privilegios de kcheckpass."
+echo "NoNewPrivs=1 impide que auxiliares setuid/setgid eleven privilegios." 
+echo "No dar permisos públicos a /etc/shadow y no desactivar no-new-privileges a ciegas."

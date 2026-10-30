@@ -23,7 +23,19 @@ assert "--cap-drop=ALL" in installer
 assert "--security-opt=no-new-privileges:true" in installer
 assert "CHROME_SANDBOX_MARKER" in installer
 assert "ACTUAL_CHROME_PROFILE_HASH" in installer
-assert 'CHROME_RUNTIME_OPTS="--security-opt seccomp=' in installer
+# La nueva política mínima requiere SYS_CHROOT para el chroot del zygote.
+# Sólo puede añadirse cuando el hash del perfil aprobado coincide.
+sandbox_option = (
+    'CHROME_RUNTIME_OPTS="--cap-add=SYS_CHROOT '
+    '--security-opt seccomp=$CHROME_SANDBOX_PROFILE '
+    '--env ARCADECLOUD_CHROME_SANDBOX_ENABLED=1"'
+)
+assert 'CHROME_RUNTIME_OPTS=""' in installer
+assert sandbox_option in installer
+assert installer.index(sandbox_option) > installer.index('ACTUAL_CHROME_PROFILE_HASH')
+assert '--cap-add=SYS_CHROOT' in trial
+assert '--cap-add=SYS_ADMIN' not in trial
+assert 'seccomp=unconfined' not in trial
 assert "ARCADECLOUD_CHROME_SANDBOX_ENABLED=1" in installer
 assert "ENABLE_ON_PASS=0" in trial
 assert "--enable-on-pass" in trial

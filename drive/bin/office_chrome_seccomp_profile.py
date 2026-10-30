@@ -30,6 +30,18 @@ def generate(source: Path, output: Path) -> None:
         for r in rules
     ):
         raise ValueError("No se detectó fallback ENOSYS/EPERM esperado para clone3")
+    if not any(
+        "chroot" in r.get("names", ()) and
+        r.get("action") == "SCMP_ACT_ALLOW" and
+        "CAP_SYS_CHROOT" in r.get("includes", {}).get("caps", ())
+        for r in rules
+    ):
+        raise ValueError(
+            "Moby seccomp no contiene la regla chroot controlada por CAP_SYS_CHROOT"
+        )
+    # chroot sólo se permitirá en el contenedor que haya superado el
+    # ensayo Chrome y cuyo perfil esté fijado por SHA-256. No se concede
+    # SYS_CHROOT al resto de la Workstation por defecto.
     # Restore a single allow for the 3 relevant syscalls even if the
     # original profile has cap-dependent or arg-filtered rules. Do not
     # remove any existing rules or broaden any other syscall.

@@ -4,13 +4,13 @@
 
 ## Resumen
 
-- PHP analizados: **605**
-- PHP que ya contienen clases/interfaces: **332**
+- PHP analizados: **613**
+- PHP que ya contienen clases/interfaces: **333**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **100**
+- Tests PHP separados del objetivo OOP de runtime: **107**
 - JavaScript analizados: **97**
-- JavaScript que ya contienen clases: **89**
-- JavaScript runtime marcados para migración/revisión: **0**
+- JavaScript que ya contienen clases: **88**
+- JavaScript runtime marcados para migración/revisión: **1**
 - Tests JavaScript separados del objetivo OOP de runtime: **13**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
 - Clientes AJAX detectados: **60** módulos / **127** llamadas
@@ -158,8 +158,8 @@
 | `drive/node-status.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/notebook-api.php` | 69 | thin endpoint | 0 | — | — | — | — |
 | `drive/notebook.php` | 206 | view/entrypoint | 0 | — | — | — | — |
-| `drive/office-gateway.php` | 675 | view/entrypoint | 0 | — | — | — | — |
-| `drive/office-launch.php` | 86 | thin endpoint | 0 | — | — | — | — |
+| `drive/office-gateway.php` | 746 | view/entrypoint | 0 | — | — | — | — |
+| `drive/office-launch.php` | 84 | thin endpoint | 0 | — | — | — | — |
 | `drive/os-preferences.php` | 97 | thin endpoint | 0 | — | — | — | — |
 | `drive/personal_aws_bootstrap.php` | 86 | class/module | 1 | — | — | — | — |
 | `drive/polly_cargar_texto.php` | 8 | thin endpoint | 0 | — | — | — | — |
@@ -212,12 +212,12 @@
 | `drive/src/Application/DrivePageService.php` | 40 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/DrivePageViewModel.php` | 18 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/FileAccessService.php` | 114 | class/module | 1 | — | — | — | — |
-| `drive/src/Application/FileKeyRotationService.php` | 67 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Application/FileKeyRotationService.php` | 68 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/FileListService.php` | 194 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Application/FileMutationService.php` | 208 | class/module | 1 | — | — | — | — |
+| `drive/src/Application/FileMutationService.php` | 210 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/FileSearchService.php` | 159 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/FolderDocumentService.php` | 324 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Application/FolderMutationService.php` | 323 | class/module | 1 | — | — | — | — |
+| `drive/src/Application/FolderMutationService.php` | 363 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/FolderQueryService.php` | 224 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/MoveJobService.php` | 348 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/NativeDrivePolicy.php` | 38 | class/module | 1 | — | — | — | — |
@@ -238,7 +238,7 @@
 | `drive/src/Aws/FileMetadataRepository.php` | 118 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Aws/FileRecordLocator.php` | 75 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Aws/FolderTextractJobStore.php` | 143 | class/module | 1 | — | — | — | — |
-| `drive/src/Aws/FolderTextractService.php` | 231 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Aws/FolderTextractService.php` | 232 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Aws/GeneratedFileRepository.php` | 36 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Aws/PersonalAwsConfig.php` | 122 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/PersonalAwsRuntime.php` | 61 | class/module | 1 | — | — | — | — |
@@ -412,12 +412,13 @@
 | `drive/src/Notebook/NotebookService.php` | 394 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeActivityProbe.php` | 57 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeDocumentSessionRepository.php` | 351 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Office/OfficeDocumentStorageService.php` | 605 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Office/OfficeDocumentStorageService.php` | 606 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeGatewayService.php` | 175 | class/module | 1 | — | — | — | — |
 | `drive/src/Office/OfficeLaunchTokenRepository.php` | 164 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeSchemaMigrationService.php` | 141 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Office/OfficeSessionLeaseRepository.php` | 207 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Office/OfficeSessionLeaseRepository.php` | 219 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeSessionReconciler.php` | 287 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Office/OfficeUserContainerIdentity.php` | 66 | class/module | 1 | — | — | — | — |
 | `drive/src/Office/OfficeWorkstationClient.php` | 178 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/AuthenticationRepository.php` | 101 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Security/AuthenticationService.php` | 55 | class/module | 1 | — | — | — | — |
@@ -450,12 +451,12 @@
 | `drive/src/Sharing/ShareLinkService.php` | 78 | class/module | 1 | — | — | — | — |
 | `drive/src/Sharing/ShareObjectStorage.php` | 37 | class/module | 1 | — | — | — | — |
 | `drive/src/Sharing/ShareTokenStore.php` | 132 | class/module | 1 | — | — | — | — |
-| `drive/src/Storage/FileRecordRepository.php` | 174 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Storage/FileRecordRepository.php` | 180 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Storage/FolderMutationRepository.php` | 326 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Storage/FolderRepository.php` | 143 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Storage/MoveJobStore.php` | 335 | class/module | 1 | — | — | — | — |
-| `drive/src/Storage/S3ObjectCopyService.php` | 53 | class/module | 1 | — | — | — | — |
-| `drive/src/Storage/StorageObjectNameCodec.php` | 104 | class/module | 1 | — | — | — | — |
+| `drive/src/Storage/S3ObjectCopyService.php` | 54 | class/module | 1 | — | — | — | — |
+| `drive/src/Storage/StorageObjectNameCodec.php` | 117 | class/module | 1 | — | — | — | — |
 | `drive/src/Storage/StorageUsageService.php` | 103 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Storage/UserStoragePath.php` | 50 | class/module | 1 | — | — | — | — |
 | `drive/src/Storage/UserStorageProvisioner.php` | 105 | class/module | 1 | — | ⚠️ | — | — |
@@ -472,11 +473,11 @@
 | `drive/src/System/NodeServiceCatalog.php` | 35 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/AdminMultipartUploadService.php` | 326 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/ChunkedUploadCleanupService.php` | 101 | class/module | 1 | — | — | — | — |
-| `drive/src/Upload/PublicDropzoneUploadService.php` | 143 | class/module | 1 | — | — | — | — |
-| `drive/src/Upload/PublicMultipartUploadService.php` | 262 | class/module | 1 | — | — | — | — |
+| `drive/src/Upload/PublicDropzoneUploadService.php` | 144 | class/module | 1 | — | — | — | — |
+| `drive/src/Upload/PublicMultipartUploadService.php` | 263 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/PublicSharedBrowserRepository.php` | 61 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Upload/PublicSharedBrowserService.php` | 189 | class/module | 1 | — | — | — | — |
-| `drive/src/Upload/SingleUploadService.php` | 112 | class/module | 1 | — | — | — | — |
+| `drive/src/Upload/SingleUploadService.php` | 113 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/UploadCatalogRepository.php` | 173 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Upload/UploadCleanupService.php` | 294 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Upload/UploadTaskReconciler.php` | 78 | class/module | 1 | — | ⚠️ | — | — |
@@ -541,9 +542,9 @@
 | `drive/tests/federation_replica_smoke.php` | 115 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_sequence_allocator_contract.php` | 50 | test script | 0 | — | — | — | — |
 | `drive/tests/federationcloud_smoke.php` | 197 | test script | 0 | — | — | — | — |
-| `drive/tests/file_copy_regression.php` | 84 | test script | 0 | — | ⚠️ | — | — |
+| `drive/tests/file_copy_regression.php` | 96 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/file_mutation_csrf_regression.php` | 97 | test script | 2 | ⚠️ | — | — | — |
-| `drive/tests/folder_deletion_regression.php` | 93 | test script | 0 | — | ⚠️ | ⚠️ | — |
+| `drive/tests/folder_deletion_regression.php` | 97 | test script | 0 | — | ⚠️ | ⚠️ | — |
 | `drive/tests/folder_document_sanitizer.php` | 49 | test script | 0 | — | — | — | — |
 | `drive/tests/folder_textract_background_task_contract.php` | 39 | test script | 0 | — | — | — | — |
 | `drive/tests/folder_textract_contract_smoke.php` | 34 | test script | 0 | — | — | — | — |
@@ -567,8 +568,14 @@
 | `drive/tests/node_mysql_monitor_contract_smoke.php` | 27 | test script | 0 | — | — | — | — |
 | `drive/tests/notebook_contract_smoke.php` | 93 | test script | 0 | — | — | — | — |
 | `drive/tests/office_conditional_save_regression.php` | 148 | test script | 1 | — | ⚠️ | — | — |
+| `drive/tests/office_gateway_audio_persistence_smoke.php` | 40 | test script | 0 | — | — | — | — |
+| `drive/tests/office_gateway_audio_ui_smoke.php` | 55 | test script | 0 | — | — | — | — |
 | `drive/tests/office_gateway_contract_smoke.php` | 375 | test script | 0 | — | — | — | — |
 | `drive/tests/office_kde_chrome_launch_smoke.php` | 40 | test script | 0 | — | — | — | — |
+| `drive/tests/office_kde_pam_clock_smoke.php` | 29 | test script | 0 | — | — | — | — |
+| `drive/tests/office_novnc_cold_start_smoke.php` | 42 | test script | 0 | — | — | — | — |
+| `drive/tests/office_pipewire_startup_smoke.php` | 30 | test script | 0 | — | — | — | — |
+| `drive/tests/office_user_container_identity_smoke.php` | 40 | test script | 0 | — | — | — | — |
 | `drive/tests/password_credential_verifier_smoke.php` | 44 | test script | 0 | — | — | — | — |
 | `drive/tests/production_preflight_contract_smoke.php` | 35 | test script | 0 | — | — | — | — |
 | `drive/tests/public_upload_rollback_regression.php` | 68 | test script | 0 | — | ⚠️ | ⚠️ | — |
@@ -580,6 +587,7 @@
 | `drive/tests/setup_entry_guard_smoke.php` | 38 | test script | 0 | — | — | — | — |
 | `drive/tests/setup_finalize_contract_smoke.php` | 75 | test script | 0 | — | — | — | — |
 | `drive/tests/smtp_config_smoke.php` | 49 | test script | 0 | — | — | — | — |
+| `drive/tests/storage_object_name_codec_regression.php` | 77 | test script | 0 | — | — | — | — |
 | `drive/tests/sync_repository_regression.php` | 91 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/sync_schema_migrator_regression.php` | 75 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/system_panel_fixture.php` | 28 | test script | 0 | — | — | — | — |
@@ -620,10 +628,10 @@
 | `drive/upload/UploadFactory.php` | 60 | class/module | 1 | — | — | — | — |
 | `drive/upload/core/UploadResponse.php` | 15 | class/module | 1 | — | — | — | — |
 | `drive/upload/core/UploaderInterface.php` | 11 | class/module | 0 | — | — | — | — |
-| `drive/upload/drivers/Chunked15MBUploader.php` | 292 | class/module | 1 | — | — | — | — |
-| `drive/upload/drivers/DropboxUploader.php` | 147 | class/module | 1 | — | — | — | — |
-| `drive/upload/drivers/LocalPresignedPutUploader.php` | 325 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/upload/drivers/RemoteUrlUploader.php` | 493 | class/module | 1 | — | — | — | — |
+| `drive/upload/drivers/Chunked15MBUploader.php` | 293 | class/module | 1 | — | — | — | — |
+| `drive/upload/drivers/DropboxUploader.php` | 148 | class/module | 1 | — | — | — | — |
+| `drive/upload/drivers/LocalPresignedPutUploader.php` | 326 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/upload/drivers/RemoteUrlUploader.php` | 494 | class/module | 1 | — | — | — | — |
 | `drive/upload/repositories/FileS3Repository.php` | 86 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/upload/storage/UploadStateStore.php` | 101 | class/module | 1 | — | — | — | — |
 | `drive/upload.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -641,7 +649,7 @@
 
 | Archivo | Líneas | Tipo detectado | Clases | Funciones globales | `window` funciones | Observaciones |
 |---|---:|---|---|---|---|---|
-| `drive/docker/workstation/arcadecloud-audio.js` | 74 | class/module | ArcadeCloudOfficeAudio | — | — | — |
+| `drive/docker/workstation/arcadecloud-audio.js` | 203 | procedural script | — | — | — | no ES class |
 | `drive/js/actualizar-hora.js` | 36 | class/module | ActualizarHoraModule | — | — | — |
 | `drive/js/ai-search.js` | 187 | class/module | DriveAiSearchModule | — | — | — |
 | `drive/js/arcadecloud-updater.js` | 326 | class/module | ArcadeCloudUpdaterModule | — | — | — |

@@ -14,6 +14,24 @@ if [[ -e "/usr/share/zoneinfo/$TZ" ]]; then
   printf '%s\n' "$TZ" > /etc/timezone
 fi
 
+# Indicador de sandbox persistente ENTRE SESIONES, pero efímero por
+# contenedor: XRDP/Guacamole no garantiza heredar la variable de entorno
+# que Docker sí entrega al entrypoint. Un archivo controlado por root en /run
+# sirve a ambos escritorios sin conceder control sobre el modo sandbox al UID
+# arcade ni editar los perfiles de Chrome o las configuraciones KDE/XFCE.
+# El host activa esta variable únicamente con el perfil seccomp validado
+# y SHA-256 correcto (install_workstation_node.sh).
+CHROME_SANDBOX_RUNTIME_DIR=/run/arcadecloud-office
+CHROME_SANDBOX_RUNTIME_MARKER=$CHROME_SANDBOX_RUNTIME_DIR/chrome-sandbox-enabled
+install -d -o root -g root -m 0755 "$CHROME_SANDBOX_RUNTIME_DIR"
+if [[ "${ARCADECLOUD_CHROME_SANDBOX_ENABLED:-0}" == "1" ]]; then
+  install -o root -g root -m 0444 /dev/null "$CHROME_SANDBOX_RUNTIME_MARKER"
+  echo "[Chrome] sandbox validado habilitado para KDE/noVNC y XRDP/Guacamole."
+else
+  rm -f "$CHROME_SANDBOX_RUNTIME_MARKER"
+  echo "[Chrome] sandbox no validado; modo de compatibilidad sin cambios."
+fi
+
 mkdir -p \
   /home/arcade/.vnc \
   /home/arcade/.config/xfce4 \

@@ -91,7 +91,11 @@ assert "--cap-drop=ALL" in installer
 assert 'ACTUAL_CHROME_PROFILE_HASH' in installer
 assert 'ARCADECLOUD_CHROME_SANDBOX_ENABLED=1' in installer
 assert "CHROME_SANDBOX_ARGS=(--no-sandbox)" in launcher
-assert 'ARCADECLOUD_CHROME_SANDBOX_ENABLED:-0' in launcher
+entrypoint = (root / "docker/workstation/entrypoint.sh").read_text()
+assert 'CHROME_SANDBOX_MARKER=/run/arcadecloud-office/chrome-sandbox-enabled' in launcher
+assert '[[ -f "$CHROME_SANDBOX_MARKER" ]]' in launcher
+assert 'ARCADECLOUD_CHROME_SANDBOX_ENABLED:-0' in entrypoint
+assert 'install -o root -g root -m 0444 /dev/null "$CHROME_SANDBOX_RUNTIME_MARKER"' in entrypoint
 assert "rm -f /etc/arcadecloud-drive/chrome-sandbox-enabled" in rollback
 print("OK: perfil Docker deny-by-default + tres syscalls Playwright.")
 print("OK: ensayo real con capacidades de Office, sin red ni datos persistentes.")

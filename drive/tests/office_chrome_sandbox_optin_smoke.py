@@ -16,7 +16,16 @@ for name in ("office_chrome_sandbox_trial.sh", "office_chrome_sandbox_disable.sh
     assert check.returncode == 0, f"{name}: {check.stderr}"
 
 assert "CHROME_SANDBOX_ARGS=(--no-sandbox)" in launcher
-assert 'ARCADECLOUD_CHROME_SANDBOX_ENABLED:-0' in launcher
+entrypoint = (root / "docker/workstation/entrypoint.sh").read_text()
+assert 'CHROME_SANDBOX_MARKER=/run/arcadecloud-office/chrome-sandbox-enabled' in launcher
+assert '[[ -f "$CHROME_SANDBOX_MARKER" ]]' in launcher
+assert 'ARCADECLOUD_CHROME_SANDBOX_ENABLED:-0' not in launcher, (
+    "XRDP no hereda necesariamente la variable Docker: usar marcador root-owned"
+)
+assert 'ARCADECLOUD_CHROME_SANDBOX_ENABLED:-0' in entrypoint
+assert 'install -d -o root -g root -m 0755 "$CHROME_SANDBOX_RUNTIME_DIR"' in entrypoint
+assert 'install -o root -g root -m 0444 /dev/null "$CHROME_SANDBOX_RUNTIME_MARKER"' in entrypoint
+assert 'rm -f "$CHROME_SANDBOX_RUNTIME_MARKER"' in entrypoint
 assert 'CHROME_SANDBOX_ARGS=()' in launcher
 assert 'CHROME_SANDBOX_ARGS[@]' in launcher
 assert "--cap-drop=ALL" in installer
@@ -51,5 +60,8 @@ assert "ARCADECLOUD_CHROME_SANDBOX_ENABLED=1" not in rollback
 assert "rm -f /etc/arcadecloud-drive/chrome-sandbox-enabled" in rollback
 assert "systemctl restart" not in rollback
 assert "docker restart" not in rollback
+assert "systemctl restart" not in entrypoint
+assert "--no-sandbox" not in entrypoint
+
 print("OK: Chrome sandbox queda inactivo por defecto y sólo se habilita al pasar la prueba.")
 print("OK: perfil seccomp con hash y rollback seguros, sin reinicio automático.")

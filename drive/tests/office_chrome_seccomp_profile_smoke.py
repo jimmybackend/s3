@@ -56,6 +56,7 @@ for file in ("office_chrome_sandbox_trial.sh", "install_workstation_node.sh",
                                capture_output=True, text=True)
     assert completed.returncode == 0, (file, completed.stderr)
 assert "office_chrome_seccomp_profile.py" in trial
+assert "moby/profiles/4b8214fc4971e06172938a1f1554ccff6647ee80/seccomp/default.json" in trial
 assert "docker run --rm --network none" in trial
 assert "--security-opt=no-new-privileges:true" in trial
 assert "--cap-drop=ALL" in trial

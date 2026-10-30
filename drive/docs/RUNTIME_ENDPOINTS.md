@@ -44,14 +44,14 @@
 | `drive/logout.php` | `drive/dataword3d.php`, `drive/notebook.php`, `drive/s3.php`, `drive/so.php`, `drive/src/Federation/FederationDropGoogleAuthService.php`, `drive/src/View/FederationDropPageRenderer.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/node-status.php` | `drive/so.php`, `drive/src/Admin/ProductionPreflightService.php`, `drive/tests/web_os_contract_smoke.php`, `drive/js/so-node.js` |
 | `drive/notebook.php` | `drive/so.php`, `drive/tests/notebook_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php`, `drive/js/os-window-manager.js` |
-| `drive/office-launch.php` | `drive/so.php`, `drive/tests/office_gateway_contract_smoke.php`, `drive/tests/office_kde_chrome_launch_smoke.php`, `drive/tests/web_os_contract_smoke.php`, `drive/tests/web_os_remote_applications_smoke.php`, `drive/tests/web_os_desktop_shell_functional.js` |
+| `drive/office-launch.php` | `drive/so.php`, `drive/tests/office_gateway_audio_persistence_smoke.php`, `drive/tests/office_gateway_contract_smoke.php`, `drive/tests/office_kde_chrome_launch_smoke.php`, `drive/tests/office_user_container_identity_smoke.php`, `drive/tests/web_os_contract_smoke.php`, `drive/tests/web_os_remote_applications_smoke.php`, `drive/tests/web_os_desktop_shell_functional.js` |
 | `drive/os-preferences.php` | `drive/dataword3d.php`, `drive/so.php`, `drive/tests/dataword3d_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php`, `drive/js/dataword3d.js` |
 | `drive/personal_aws_bootstrap.php` | `drive/aws.php`, `drive/ec2.php`, `drive/server-console.php`, `drive/tests/server_console_contract_smoke.php` |
 | `drive/psesion.php` | `drive/index.php`, `drive/login.php`, `drive/tests/index_federation_drop_smoke.php` |
 | `drive/s3.php` | `drive/app_bootstrap.php`, `drive/ec2.php`, `drive/fastdrive-control.php`, `drive/personal_aws_bootstrap.php`, `drive/so.php`, `drive/src/Http/Controller/AbstractJsonController.php`, `drive/src/View/ActivityCostPageRenderer.php`, `drive/src/View/FederationModerationPageRenderer.php`, `drive/src/View/FederationPortalRenderer.php`, `drive/src/View/FederationReportPageRenderer.php`, `drive/src/View/PersonalAwsPageRenderer.php`, `drive/tests/drive3d_native_action_context_test.php`, `drive/tests/index_federation_drop_smoke.php`, `drive/tests/media_processing_contract_smoke.php`, `drive/tests/web_os_clipboard_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php`, `drive/up.php`, `drive/js/archivos.js`, `drive/js/carpetas.js`, `drive/js/federation-share-drive.js`, `drive/js/so.js`, `drive/js/subir.js`, `drive/tests/classic_mutation_csrf_functional.js` |
 | `drive/server-console.php` | `drive/ec2.php`, `drive/so.php`, `drive/tests/server_console_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php`, `drive/tests/web_os_remote_applications_smoke.php` |
 | `drive/setup/index.php` | `drive/bloque_archivos.php`, `drive/bloque_carpetas.php`, `drive/dataword3d.php`, `drive/fastdrive-control.php`, `drive/folder-suggestions.php`, `drive/mobile_capture.php`, `drive/notebook-api.php`, `drive/notebook.php`, `drive/office-launch.php`, `drive/s3.php`, `drive/so.php`, `drive/src/Http/Controller/ActivityCostController.php`, `drive/src/Http/Controller/AuthController.php`, `drive/src/Http/Controller/FederationModerationController.php`, `drive/src/Http/Controller/FederationOsAdminController.php`, `drive/src/Http/Controller/LoginErrorController.php`, `drive/src/Security/SessionManager.php`, `drive/src/View/FederationReportPageRenderer.php`, `drive/tests/dataword3d_contract_smoke.php`, `drive/tests/index_federation_drop_smoke.php`, `drive/tests/mobile_capture_contract_smoke.php`, `drive/tests/office_gateway_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php`, `drive/three-lab/drive3d-lab.php` |
-| `drive/so.php` | `drive/dataword3d.php`, `drive/mobile_capture.php`, `drive/s3.php`, `drive/src/Admin/ProductionPreflightService.php`, `drive/src/Http/Controller/AbstractJsonController.php`, `drive/src/Http/Controller/AuthController.php`, `drive/src/View/FederationPageRenderer.php`, `drive/tests/database_backup_contract_smoke.php`, `drive/tests/dataword3d_contract_smoke.php`, `drive/tests/drive3d_native_action_context_test.php`, `drive/tests/node_diagnostics_contract_smoke.php`, `drive/tests/notebook_contract_smoke.php`, `drive/tests/office_gateway_contract_smoke.php`, `drive/tests/office_kde_chrome_launch_smoke.php`, `drive/tests/server_console_contract_smoke.php`, `drive/tests/web_os_clipboard_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php`, `drive/tests/web_os_desktop_shell_smoke.php`, `drive/tests/web_os_file_applications_smoke.php`, `drive/tests/web_os_interactions_theme_smoke.php`, `drive/tests/web_os_multiwindow_smoke.php`, `drive/tests/web_os_pending_fixes_smoke.php`, `drive/tests/web_os_remote_applications_smoke.php`, `drive/tests/web_os_theme_contract_smoke.php`, `drive/js/dataword3d.js`, `drive/js/drive3d-actions.js`, `drive/js/notebook.js`, `drive/js/os-window-manager.js`, `drive/js/so.js`, `drive/tests/background_tasks_refresh_functional.js` |
+| `drive/so.php` | `drive/dataword3d.php`, `drive/mobile_capture.php`, `drive/s3.php`, `drive/src/Admin/ProductionPreflightService.php`, `drive/src/Http/Controller/AbstractJsonController.php`, `drive/src/Http/Controller/AuthController.php`, `drive/src/View/FederationPageRenderer.php`, `drive/tests/database_backup_contract_smoke.php`, `drive/tests/dataword3d_contract_smoke.php`, `drive/tests/drive3d_native_action_context_test.php`, `drive/tests/node_diagnostics_contract_smoke.php`, `drive/tests/notebook_contract_smoke.php`, `drive/tests/office_gateway_audio_persistence_smoke.php`, `drive/tests/office_gateway_contract_smoke.php`, `drive/tests/office_kde_chrome_launch_smoke.php`, `drive/tests/server_console_contract_smoke.php`, `drive/tests/web_os_clipboard_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php`, `drive/tests/web_os_desktop_shell_smoke.php`, `drive/tests/web_os_file_applications_smoke.php`, `drive/tests/web_os_interactions_theme_smoke.php`, `drive/tests/web_os_multiwindow_smoke.php`, `drive/tests/web_os_pending_fixes_smoke.php`, `drive/tests/web_os_remote_applications_smoke.php`, `drive/tests/web_os_theme_contract_smoke.php`, `drive/js/dataword3d.js`, `drive/js/drive3d-actions.js`, `drive/js/notebook.js`, `drive/js/os-window-manager.js`, `drive/js/so.js`, `drive/tests/background_tasks_refresh_functional.js` |
 | `drive/src/Admin/ManagedRuntimeEnvironment.php` | `drive/app_bootstrap.php`, `drive/personal_aws_bootstrap.php`, `drive/setup/api.php`, `drive/tests/fastdrive_control_contract_smoke.php`, `drive/tests/installer_service_reconcile_contract_smoke.php`, `drive/tests/server_admin_config_smoke.php` |
 | `drive/src/Http/Controller/LoginErrorController.php` | `drive/login-error.php` |
 | `drive/src/Security/LoginPageGuard.php` | `drive/index.php`, `drive/login.php`, `drive/src/Http/Controller/LoginErrorController.php` |
@@ -166,7 +166,7 @@
 | `drive/mover_archivo.php` | `drive/js/archivos.js` |
 | `drive/mover_carpeta.php` | `drive/js/carpetas.js` |
 | `drive/notebook-api.php` | `drive/tests/notebook_contract_smoke.php`, `drive/js/notebook.js` |
-| `drive/office-gateway.php` | `drive/tests/compute_admission_lock_contract_smoke.php`, `drive/tests/office_gateway_contract_smoke.php`, `drive/tests/office_kde_chrome_launch_smoke.php` |
+| `drive/office-gateway.php` | `drive/tests/compute_admission_lock_contract_smoke.php`, `drive/tests/office_gateway_audio_ui_smoke.php`, `drive/tests/office_gateway_contract_smoke.php`, `drive/tests/office_kde_chrome_launch_smoke.php`, `drive/tests/office_kde_pam_clock_smoke.php`, `drive/tests/office_user_container_identity_smoke.php` |
 | `drive/polly_cargar_texto.php` | `drive/js/polly.js` |
 | `drive/polly_list_voices.php` | `drive/js/polly.js` |
 | `drive/polly_task_status.php` | ninguna |
@@ -213,10 +213,10 @@
 | `drive/src/Application/FileAccessService.php` | `drive/tests/arcadelink_bulk_contract_regression.php` |
 | `drive/src/Application/FileKeyRotationService.php` | ninguna |
 | `drive/src/Application/FileListService.php` | `drive/tests/large_folder_regression.php`, `drive/tests/web_os_contract_smoke.php` |
-| `drive/src/Application/FileMutationService.php` | `drive/tests/web_os_clipboard_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
+| `drive/src/Application/FileMutationService.php` | `drive/tests/storage_object_name_codec_regression.php`, `drive/tests/web_os_clipboard_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Application/FileSearchService.php` | `drive/tests/large_folder_regression.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Application/FolderDocumentService.php` | `drive/tests/folder_document_sanitizer.php` |
-| `drive/src/Application/FolderMutationService.php` | `drive/tests/web_os_clipboard_contract_smoke.php` |
+| `drive/src/Application/FolderMutationService.php` | `drive/tests/storage_object_name_codec_regression.php`, `drive/tests/web_os_clipboard_contract_smoke.php` |
 | `drive/src/Application/FolderQueryService.php` | `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Application/MoveJobService.php` | `drive/tests/web_os_clipboard_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Application/NativeDrivePolicy.php` | `drive/tests/native_drive_policy_regression.php` |
@@ -416,6 +416,7 @@
 | `drive/src/Office/OfficeSchemaMigrationService.php` | `drive/tests/installer_service_reconcile_contract_smoke.php`, `drive/tests/office_gateway_contract_smoke.php` |
 | `drive/src/Office/OfficeSessionLeaseRepository.php` | `drive/tests/office_gateway_contract_smoke.php` |
 | `drive/src/Office/OfficeSessionReconciler.php` | `drive/tests/office_gateway_contract_smoke.php` |
+| `drive/src/Office/OfficeUserContainerIdentity.php` | `drive/tests/office_user_container_identity_smoke.php` |
 | `drive/src/Office/OfficeWorkstationClient.php` | `drive/tests/office_gateway_contract_smoke.php` |
 | `drive/src/Security/AuthenticationRepository.php` | `drive/tests/fastdrive_control_contract_smoke.php` |
 | `drive/src/Security/AuthenticationService.php` | `drive/tests/native_authentication_regression.php` |
@@ -447,8 +448,8 @@
 | `drive/src/Storage/FolderMutationRepository.php` | `drive/tests/web_os_clipboard_contract_smoke.php` |
 | `drive/src/Storage/FolderRepository.php` | `drive/tests/web_os_contract_smoke.php`, `drive/tests/web_os_multiwindow_smoke.php` |
 | `drive/src/Storage/MoveJobStore.php` | `drive/tests/web_os_contract_smoke.php` |
-| `drive/src/Storage/S3ObjectCopyService.php` | ninguna |
-| `drive/src/Storage/StorageObjectNameCodec.php` | `drive/tests/chunked_upload_cleanup_regression.php` |
+| `drive/src/Storage/S3ObjectCopyService.php` | `drive/tests/storage_object_name_codec_regression.php` |
+| `drive/src/Storage/StorageObjectNameCodec.php` | `drive/tests/chunked_upload_cleanup_regression.php`, `drive/tests/storage_object_name_codec_regression.php` |
 | `drive/src/Storage/StorageUsageService.php` | ninguna |
 | `drive/src/Storage/UserStoragePath.php` | `drive/tests/chunked_upload_cleanup_regression.php`, `drive/tests/native_drive_policy_regression.php` |
 | `drive/src/Storage/UserStorageProvisioner.php` | ninguna |
@@ -560,8 +561,14 @@
 | `drive/tests/node_mysql_monitor_contract_smoke.php` | ninguna |
 | `drive/tests/notebook_contract_smoke.php` | ninguna |
 | `drive/tests/office_conditional_save_regression.php` | ninguna |
+| `drive/tests/office_gateway_audio_persistence_smoke.php` | ninguna |
+| `drive/tests/office_gateway_audio_ui_smoke.php` | ninguna |
 | `drive/tests/office_gateway_contract_smoke.php` | ninguna |
 | `drive/tests/office_kde_chrome_launch_smoke.php` | ninguna |
+| `drive/tests/office_kde_pam_clock_smoke.php` | ninguna |
+| `drive/tests/office_novnc_cold_start_smoke.php` | ninguna |
+| `drive/tests/office_pipewire_startup_smoke.php` | ninguna |
+| `drive/tests/office_user_container_identity_smoke.php` | ninguna |
 | `drive/tests/password_credential_verifier_smoke.php` | ninguna |
 | `drive/tests/production_preflight_contract_smoke.php` | ninguna |
 | `drive/tests/public_upload_rollback_regression.php` | ninguna |
@@ -573,6 +580,7 @@
 | `drive/tests/setup_entry_guard_smoke.php` | ninguna |
 | `drive/tests/setup_finalize_contract_smoke.php` | ninguna |
 | `drive/tests/smtp_config_smoke.php` | ninguna |
+| `drive/tests/storage_object_name_codec_regression.php` | ninguna |
 | `drive/tests/sync_repository_regression.php` | ninguna |
 | `drive/tests/sync_schema_migrator_regression.php` | ninguna |
 | `drive/tests/system_panel_fixture.php` | ninguna |

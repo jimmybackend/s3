@@ -32,7 +32,7 @@ echo "=== 1. PERFIL SECCOMP BASADO EN LA POLÍTICA DE MOBY ==="
 # Playwright recomienda clone, unshare y setns para Chromium.
 # Se añade SOLO esa excepción; se conserva el deny-by-default.
 curl -fLsS --connect-timeout 8 --max-time 25 --retry 1 \
-  https://raw.githubusercontent.com/moby/profiles/main/seccomp/default.json \
+  https://raw.githubusercontent.com/moby/profiles/4b8214fc4971e06172938a1f1554ccff6647ee80/seccomp/default.json \
   -o "$temp_dir/default.json" || {
   echo "No se pudo descargar seccomp oficial; Office no se modificó." >&2
   exit 4
@@ -42,12 +42,14 @@ python3 "$SCRIPT_ROOT/office_chrome_seccomp_profile.py" \
 
 echo "=== 2. PRUEBA DESCARTABLE, REPRODUCIENDO LAS CAPACIDADES DE OFFICE ==="
 echo "Sin red, documentos, home real, SYS_ADMIN ni acceso a S3."
+echo "SYS_CHROOT se prueba exclusivamente en el contenedor descartable."
 if docker run --rm --network none --pids-limit 256 \
   --security-opt=no-new-privileges:true \
   --security-opt="seccomp=$temp_dir/office-trial.json" \
   --cap-drop=ALL \
   --cap-add=SETUID --cap-add=SETGID --cap-add=CHOWN \
   --cap-add=DAC_OVERRIDE --cap-add=FOWNER \
+  --cap-add=SYS_CHROOT \
   --user 10001:10001 --memory=5632m --cpus=3.25 --shm-size=1g \
   --tmpfs /tmp:rw,nosuid,nodev,mode=1777 \
   --tmpfs /home/arcade:rw,nosuid,nodev,uid=10001,gid=10001,mode=0700 \
@@ -68,6 +70,17 @@ if docker run --rm --network none --pids-limit 256 \
     else
       echo "AVISO: user + PID namespaces no disponibles."
       cat /tmp/userpid.err || true
+    fi
+    echo "--- Verificar chroot dentro del user namespace ---"
+    # Chromium realiza chroot("/proc/self/fdinfo/") en el zygote.
+    # Docker sólo permite la syscall de Moby si tiene CAP_SYS_CHROOT.
+    # La prueba se ejecuta dentro de un user namespace efímero y no
+    # modifica el filesystem ni los procesos de la Workstation real.
+    if unshare --user --map-root-user python3 -c '\''import os; os.chroot("/proc/self/fdinfo/"); print("OK: chroot autorizado sin SYS_ADMIN")'\''; then
+      echo "OK: Chrome puede intentar el aislamiento por chroot."
+    else
+      echo "NO APTO: syscall chroot todavía bloqueada en sandbox de prueba."
+      exit 22
     fi
     echo "--- Google Chrome con sandbox nativo ---"
     ulimit -c 0 || true

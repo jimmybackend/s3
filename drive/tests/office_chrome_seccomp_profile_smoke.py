@@ -18,6 +18,8 @@ with tempfile.TemporaryDirectory(prefix="arcadecloud-chrome-policy-test-") as te
     target = Path(temp) / "trial.json"
     entries = [
         {"names": ["clone3"], "action": "SCMP_ACT_ERRNO", "errnoRet": 38},
+        {"names": ["chroot"], "action": "SCMP_ACT_ALLOW",
+         "includes": {"caps": ["CAP_SYS_CHROOT"]}},
         *({"names": [f"syscall_{i}"], "action": "SCMP_ACT_ALLOW"} for i in range(24)),
     ]
     original = {"defaultAction": "SCMP_ACT_ERRNO", "archMap": [],
@@ -56,6 +58,14 @@ for file in ("office_chrome_sandbox_trial.sh", "install_workstation_node.sh",
                                capture_output=True, text=True)
     assert completed.returncode == 0, (file, completed.stderr)
 assert "office_chrome_seccomp_profile.py" in trial
+assert '--cap-add=SYS_CHROOT' in trial
+assert 'os.chroot("/proc/self/fdinfo/")' in trial
+assert 'CHROME_RUNTIME_OPTS="--cap-add=SYS_CHROOT --security-opt seccomp=' in installer
+assert 'CAP_SYS_CHROOT' in (root / "bin/office_chrome_seccomp_profile.py").read_text()
+# El marcador de sandbox aprobado debe condicionar esta capacidad.
+assert installer.index('CHROME_RUNTIME_OPTS="--cap-add=SYS_CHROOT') > installer.index('ACTUAL_CHROME_PROFILE_HASH')
+
+assert "moby/profiles/4b8214fc4971e06172938a1f1554ccff6647ee80/seccomp/default.json" in trial
 assert "docker run --rm --network none" in trial
 assert "--security-opt=no-new-privileges:true" in trial
 assert "--cap-drop=ALL" in trial

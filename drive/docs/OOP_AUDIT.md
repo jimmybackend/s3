@@ -4,16 +4,16 @@
 
 ## Resumen
 
-- PHP analizados: **613**
+- PHP analizados: **614**
 - PHP que ya contienen clases/interfaces: **333**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **107**
+- Tests PHP separados del objetivo OOP de runtime: **108**
 - JavaScript analizados: **97**
 - JavaScript que ya contienen clases: **88**
 - JavaScript runtime marcados para migración/revisión: **1**
 - Tests JavaScript separados del objetivo OOP de runtime: **13**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
-- Clientes AJAX detectados: **60** módulos / **127** llamadas
+- Clientes AJAX detectados: **61** módulos / **128** llamadas
 - JSON analizados: **10**; inválidos: **0**
 
 ## Criterio
@@ -159,7 +159,7 @@
 | `drive/notebook-api.php` | 69 | thin endpoint | 0 | — | — | — | — |
 | `drive/notebook.php` | 206 | view/entrypoint | 0 | — | — | — | — |
 | `drive/office-gateway.php` | 746 | view/entrypoint | 0 | — | — | — | — |
-| `drive/office-launch.php` | 84 | thin endpoint | 0 | — | — | — | — |
+| `drive/office-launch.php` | 94 | thin endpoint | 0 | — | — | — | — |
 | `drive/os-preferences.php` | 97 | thin endpoint | 0 | — | — | — | — |
 | `drive/personal_aws_bootstrap.php` | 86 | class/module | 1 | — | — | — | — |
 | `drive/polly_cargar_texto.php` | 8 | thin endpoint | 0 | — | — | — | — |
@@ -568,6 +568,7 @@
 | `drive/tests/node_mysql_monitor_contract_smoke.php` | 27 | test script | 0 | — | — | — | — |
 | `drive/tests/notebook_contract_smoke.php` | 93 | test script | 0 | — | — | — | — |
 | `drive/tests/office_conditional_save_regression.php` | 148 | test script | 1 | — | ⚠️ | — | — |
+| `drive/tests/office_dedicated_launcher_smoke.php` | 49 | test script | 0 | — | — | — | — |
 | `drive/tests/office_gateway_audio_persistence_smoke.php` | 40 | test script | 0 | — | — | — | — |
 | `drive/tests/office_gateway_audio_ui_smoke.php` | 55 | test script | 0 | — | — | — | — |
 | `drive/tests/office_gateway_contract_smoke.php` | 375 | test script | 0 | — | — | — | — |
@@ -606,7 +607,7 @@
 | `drive/tests/web_os_interactions_theme_smoke.php` | 30 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_multiwindow_smoke.php` | 64 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_pending_fixes_smoke.php` | 59 | test script | 0 | — | — | — | — |
-| `drive/tests/web_os_remote_applications_smoke.php` | 49 | test script | 0 | — | — | — | — |
+| `drive/tests/web_os_remote_applications_smoke.php` | 69 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_theme_contract_smoke.php` | 33 | test script | 0 | — | — | — | — |
 | `drive/tests/workstation_pdf_archive_contract_smoke.php` | 24 | test script | 0 | — | — | — | — |
 | `drive/tests/workstation_phase1_contract_smoke.php` | 89 | test script | 0 | — | — | — | — |
@@ -664,7 +665,7 @@
 | `drive/js/dataword3d.js` | 2107 | class/module | ArcadeCloudDrive3D | — | — | — |
 | `drive/js/descarga-multiple.js` | 114 | class/module | DescargaMultipleModule | — | — | — |
 | `drive/js/descarga-uno.js` | 110 | class/module | DescargaUnoModule | — | — | — |
-| `drive/js/desktop-shell.js` | 189 | class/module | ArcadeCloudDesktopShell | — | — | — |
+| `drive/js/desktop-shell.js` | 237 | class/module | ArcadeCloudDesktopShell | — | — | — |
 | `drive/js/drive3d-actions.js` | 191 | class/module | Drive3DActions | — | — | — |
 | `drive/js/drive3d-production.js` | 172 | class/module | Drive3DProduction | — | — | — |
 | `drive/js/drive3d-scene.js` | 1233 | class/module | Drive3DScene | — | — | — |
@@ -763,6 +764,7 @@
 | `drive/js/dataword3d.js` | 5 | 0 | 0 | 3 | 10 |
 | `drive/js/descarga-multiple.js` | 1 | 0 | 0 | 0 | 2 |
 | `drive/js/descarga-uno.js` | 1 | 0 | 0 | 0 | 2 |
+| `drive/js/desktop-shell.js` | 1 | 0 | 0 | 1 | 5 |
 | `drive/js/drive3d-actions.js` | 1 | 0 | 0 | 1 | 2 |
 | `drive/js/drive3d-production.js` | 1 | 0 | 0 | 1 | 3 |
 | `drive/js/elimina-multiple.js` | 2 | 0 | 0 | 1 | 3 |

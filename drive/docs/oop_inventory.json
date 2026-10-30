@@ -1,16 +1,16 @@
 {
   "summary": {
-    "php_total": 613,
+    "php_total": 614,
     "php_class_modules": 333,
     "php_needs_migration": 0,
-    "php_tests": 107,
+    "php_tests": 108,
     "js_total": 97,
     "js_class_modules": 88,
     "js_needs_migration": 1,
     "js_tests": 13,
     "js_compatibility_facades": 8,
-    "ajax_clients": 60,
-    "ajax_calls": 127,
+    "ajax_clients": 61,
+    "ajax_calls": 128,
     "json_total": 10,
     "json_invalid": 0
   },
@@ -1974,7 +1974,7 @@
     },
     {
       "path": "drive/office-launch.php",
-      "lines": 84,
+      "lines": 94,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -8258,6 +8258,23 @@
       "issues": []
     },
     {
+      "path": "drive/tests/office_dedicated_launcher_smoke.php",
+      "lines": 49,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [
+        "GET"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/tests/office_gateway_audio_persistence_smoke.php",
       "lines": 40,
       "kind": "test script",
@@ -8854,7 +8871,7 @@
     },
     {
       "path": "drive/tests/web_os_remote_applications_smoke.php",
-      "lines": 49,
+      "lines": 69,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -9831,7 +9848,7 @@
     },
     {
       "path": "drive/js/desktop-shell.js",
-      "lines": 189,
+      "lines": 237,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudDesktopShell"
@@ -9844,11 +9861,11 @@
       "top_vars": [],
       "iife": false,
       "ajax": {
-        "fetch": 0,
+        "fetch": 1,
         "xhr": 0,
         "jquery": 0,
-        "json_consumers": 0,
-        "response_checks": 3
+        "json_consumers": 1,
+        "response_checks": 5
       },
       "issues": []
     },
@@ -11931,7 +11948,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 144940,
+      "bytes": 146802,
       "valid": true,
       "root_type": "object",
       "keys": [

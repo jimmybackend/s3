@@ -56,6 +56,8 @@ try {
  $repo=new FileRecordRepository($db);$service=new FileMutationService($repo,$s3,'fixture');
  $copy=$service->copy(2,$id,'Data2/dest/');
  copyCheck(isset($objects[$key],$objects[$copy['key_s3']])&&$repo->requireByRef(2,$copy['id'])['Nombre']==='Visible.mp4','6 GiB copy preserves source and creates DB/S3 destination');
+ $copiedRow=$repo->requireByRef(2,$copy['id']);
+ copyCheck($copiedRow['Ruta']==='Data2/dest/'&&$copiedRow['Encriptado']===basename($copy['key_s3']),'copy stores physical basename without duplicating route');
  $ranges=array_values(array_map(fn($c)=>$c[1]['CopySourceRange'],array_filter($calls,fn($c)=>$c[0]==='UploadPartCopy')));
  $next=0;foreach($ranges as $r){preg_match('/bytes=(\d+)-(\d+)/',$r,$m);copyCheck((int)$m[1]===$next,'multipart ranges contiguous');$next=(int)$m[2]+1;}
  copyCheck($next===$size,'multipart covers exact large object without downloading bytes');
@@ -72,12 +74,22 @@ try {
  $calls=[];
  $small=$service->copy(2,$id,'Data2/small/');
  copyCheck(in_array('CopyObject',array_column($calls,0),true)&&!in_array('CreateMultipartUpload',array_column($calls,0),true),'small object keeps single-copy path');
+ $deepCopyRoute='Data2/'.str_repeat('d',240).'/';
+ $deepCopy=$service->copy(2,$id,$deepCopyRoute);
+ $deepCopyRow=$repo->requireByRef(2,$deepCopy['id']);
+ copyCheck(strlen($deepCopy['key_s3'])>255 && $deepCopyRow['Ruta']===$deepCopyRoute && $deepCopyRow['Encriptado']===basename($deepCopy['key_s3']),'copy to deep folder catalogs key over 255 bytes with short physical basename');
  $db->query("CREATE TRIGGER reject_copy BEFORE INSERT ON FileS3 FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='catalog fixture failure'");$calls=[];
  try{$service->copy(2,$id,'Data2/reject/');throw new LogicException('SQL failure hidden');}catch(RuntimeException){}
  copyCheck(isset($objects[$key])&&array_column($calls,0)===['HeadObject','CopyObject','DeleteObject'],'catalog failure cleans copy only');
  $db->query('DROP TRIGGER reject_copy');$failDelete=true;
  try{$service->move(2,$id,'Data2/moved/');throw new LogicException('Delete failure hidden');}catch(RuntimeException){}
  $moved=$repo->requireByRef(2,$id);copyCheck($moved['Ruta']==='Data2/moved/'&&isset($objects[$moved['_key']],$objects[$key]),'delete failure retains valid destination plus recoverable origin');
+ copyCheck($moved['Encriptado']===basename($moved['_key']),'move stores physical basename without duplicating route');
+ $failDelete=false;
+ $deepMoveRoute='Data2/'.str_repeat('e',242).'/';
+ $deepMove=$service->move(2,$id,$deepMoveRoute);
+ $deepMovedRow=$repo->requireByRef(2,$id);
+ copyCheck(strlen($deepMove['key_s3'])>255 && $deepMovedRow['Ruta']===$deepMoveRoute && $deepMovedRow['Encriptado']===basename($deepMove['key_s3']),'move to deep folder catalogs key over 255 bytes with short physical basename');
  $calls=[];try{$service->copy(3,$id,'Data3/');throw new LogicException('Foreign owner accepted');}catch(RuntimeException){}
  copyCheck($calls===[],'foreign owner rejected before S3');
 } finally {$db->query("DROP DATABASE `$database`");}

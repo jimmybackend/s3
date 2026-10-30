@@ -81,7 +81,9 @@ final class FileRecordRepository
         string $encrypted
     ): int {
         $route = $this->normalizePrefix($route);
-        $encrypted = $this->normalizeKey($encrypted);
+        // FileS3 stores the physical basename, never the full S3 object key.
+        $encrypted = basename($this->normalizeKey($encrypted));
+        if ($encrypted === '') throw new RuntimeException('Nombre físico de copia inválido.');
 
         $stmt = $this->db->prepare(
             "INSERT INTO FileS3
@@ -129,6 +131,10 @@ final class FileRecordRepository
 
     public function move(int $userId, int $id, string $route, string $encrypted): void
     {
+        // Keep the catalog representation canonical even if a caller passes a key.
+        $route = $this->normalizePrefix($route);
+        $encrypted = basename($this->normalizeKey($encrypted));
+        if ($encrypted === '') throw new RuntimeException('Nombre físico de movimiento inválido.');
         $stmt = $this->db->prepare(
             'UPDATE FileS3 SET Ruta = ?, Encriptado = ?, Found = 1 WHERE id_ = ? AND user_id_ = ?'
         );

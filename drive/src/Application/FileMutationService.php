@@ -62,7 +62,7 @@ final class FileMutationService
         (new S3ObjectCopyService($this->s3, $this->bucket))->copy($oldKey, $newKey);
 
         try {
-            $this->files->move($userId, (int)$file['id_'], $newRoute, $newKey);
+            $this->files->move($userId, (int)$file['id_'], $newRoute, $physicalName);
         } catch (\Throwable $error) {
             try {
                 $this->s3->deleteObject(['Bucket' => $this->bucket, 'Key' => $newKey]);
@@ -88,7 +88,7 @@ final class FileMutationService
             'id' => (int)$file['id_'],
             'ruta_anterior' => $oldRoute,
             'ruta_nueva' => $newRoute,
-            'encriptado_nuevo' => $newKey,
+            'encriptado_nuevo' => $physicalName,
             'old_key' => $oldKey,
             'key_s3' => $newKey,
             'derived_assets' => $derived,
@@ -129,7 +129,7 @@ final class FileMutationService
                 (int)$file['id_'],
                 $visibleName,
                 $newRoute,
-                $newKey
+                $physicalName
             );
         } catch (\Throwable $error) {
             try {

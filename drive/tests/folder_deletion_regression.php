@@ -43,8 +43,12 @@ try {
     pathCheck($repository->requireActive(2, 'Data2/ab/')['Prefix'] === 'Data2/ab/', 'copy preserves wildcard sibling');
     $count = (int)$db->query("SELECT COUNT(*) AS n FROM FileS3 WHERE Ruta = 'Data2/copied/'")->fetch_assoc()['n'];
     pathCheck($count === 1, 'copy selects exactly one literal subtree');
+    $copiedFile = $db->query("SELECT Ruta, Encriptado FROM FileS3 WHERE Ruta = 'Data2/copied/' LIMIT 1")->fetch_assoc();
+    pathCheck(($copiedFile['Encriptado'] ?? '') === 'opaque.bin', 'folder copy stores basename, not full S3 key');
     $moved = $repository->moveTree(2, 'Data2/p%/', 'Data2/moved/');
     pathCheck($moved['foldersUpdated'] === 1 && $moved['filesUpdated'] === 1, 'move selects literal percent subtree');
+    $movedFile = $db->query("SELECT Ruta, Encriptado FROM FileS3 WHERE Ruta = 'Data2/moved/' LIMIT 1")->fetch_assoc();
+    pathCheck(($movedFile['Encriptado'] ?? '') === 'opaque.bin', 'folder move stores basename, not full S3 key');
     pathCheck($repository->requireActive(2, 'Data2/percent/')['Prefix'] === 'Data2/percent/', 'move preserves percent sibling');
     $deleted = $repository->deleteTree(2, 'Data2/a_/');
     pathCheck($deleted === ['files' => 1, 'folders' => 1], 'delete selects literal underscore subtree');

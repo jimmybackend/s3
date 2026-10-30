@@ -124,7 +124,7 @@ final class FolderMutationRepository
                 $basename = basename(str_replace('\\', '/', trim((string)$file['Encriptado'])));
                 if ($basename === '') throw new RuntimeException('Archivo con Encriptado inválido.');
                 $nextRoute = $this->normalizePrefix($newPrefix . substr($route, strlen($oldPrefix)));
-                $nextEncrypted = $this->normalizeKey($nextRoute . $basename);
+                $nextEncrypted = $basename;
                 $id = (int)$file['id_'];
                 $fileStmt->bind_param('ssii', $nextRoute, $nextEncrypted, $id, $userId);
                 if (!$fileStmt->execute()) throw new RuntimeException('No se pudo actualizar FileS3: ' . $fileStmt->error);
@@ -205,7 +205,7 @@ final class FolderMutationRepository
                 if ($basename === '') throw new RuntimeException('Archivo con Encriptado inválido.');
 
                 $nextRoute = $this->normalizePrefix($newPrefix . substr($route, strlen($oldPrefix)));
-                $nextEncrypted = $this->normalizeKey($nextRoute . $basename);
+                $nextEncrypted = $basename;
                 $id = (int)$file['id_'];
 
                 $fileStmt->bind_param('ssii', $nextEncrypted, $nextRoute, $id, $userId);

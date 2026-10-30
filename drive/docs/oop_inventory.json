@@ -6402,7 +6402,7 @@
     },
     {
       "path": "drive/src/Storage/FileRecordRepository.php",
-      "lines": 174,
+      "lines": 180,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -7829,7 +7829,7 @@
     },
     {
       "path": "drive/tests/file_copy_regression.php",
-      "lines": 84,
+      "lines": 96,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -7865,7 +7865,7 @@
     },
     {
       "path": "drive/tests/folder_deletion_regression.php",
-      "lines": 93,
+      "lines": 97,
       "kind": "test script",
       "classes": 0,
       "functions": [

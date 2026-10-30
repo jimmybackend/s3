@@ -451,7 +451,7 @@
 | `drive/src/Sharing/ShareLinkService.php` | 78 | class/module | 1 | — | — | — | — |
 | `drive/src/Sharing/ShareObjectStorage.php` | 37 | class/module | 1 | — | — | — | — |
 | `drive/src/Sharing/ShareTokenStore.php` | 132 | class/module | 1 | — | — | — | — |
-| `drive/src/Storage/FileRecordRepository.php` | 174 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Storage/FileRecordRepository.php` | 180 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Storage/FolderMutationRepository.php` | 326 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Storage/FolderRepository.php` | 143 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Storage/MoveJobStore.php` | 335 | class/module | 1 | — | — | — | — |
@@ -542,9 +542,9 @@
 | `drive/tests/federation_replica_smoke.php` | 115 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_sequence_allocator_contract.php` | 50 | test script | 0 | — | — | — | — |
 | `drive/tests/federationcloud_smoke.php` | 197 | test script | 0 | — | — | — | — |
-| `drive/tests/file_copy_regression.php` | 84 | test script | 0 | — | ⚠️ | — | — |
+| `drive/tests/file_copy_regression.php` | 96 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/file_mutation_csrf_regression.php` | 97 | test script | 2 | ⚠️ | — | — | — |
-| `drive/tests/folder_deletion_regression.php` | 93 | test script | 0 | — | ⚠️ | ⚠️ | — |
+| `drive/tests/folder_deletion_regression.php` | 97 | test script | 0 | — | ⚠️ | ⚠️ | — |
 | `drive/tests/folder_document_sanitizer.php` | 49 | test script | 0 | — | — | — | — |
 | `drive/tests/folder_textract_background_task_contract.php` | 39 | test script | 0 | — | — | — | — |
 | `drive/tests/folder_textract_contract_smoke.php` | 34 | test script | 0 | — | — | — | — |

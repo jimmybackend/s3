@@ -50,6 +50,45 @@ class ArcadeCloudDesktopShell {
     return applications;
   }
 
+  // KDE y Guacamole necesitan un token de un solo uso generado por el
+  // nodo autenticado (Drive o FastDrive). Abrir primero el launcher local
+  // deja visible fastdrive.esforzados.com si la navegación se interrumpe.
+  // Abrimos la pestaña en el gesto del usuario y navegamos directamente al
+  // dominio dedicado después de recibir el destino verificado del servidor.
+  async launchOfficeGateway(href, target = '_blank') {
+    const popup = this.window.open('about:blank', target);
+    if (!popup) {
+      this.notify({ type: 'warning', message: 'Permite las ventanas emergentes para abrir ArcadeCloud Office.' });
+      return;
+    }
+    try {
+      popup.opener = null;
+      popup.document.title = 'Abriendo ArcadeCloud Office';
+      popup.document.body.textContent = 'Conectando de forma segura con ArcadeCloud Office…';
+      const request = href + (href.includes('?') ? '&' : '?') + 'format=json';
+      const response = await this.window.fetch(request, {
+        credentials: 'same-origin', cache: 'no-store', redirect: 'error',
+        headers: { Accept: 'application/json' }
+      });
+      if (!response.ok) throw new Error('No se pudo autorizar el lanzamiento');
+      const payload = await response.json();
+      const destination = new URL(String(payload?.url || ''), this.window.location.href);
+      const expectedTarget = href.includes('target=guacamole') ? 'guacamole' : 'novnc';
+      if (payload?.ok !== true || destination.protocol !== 'https:' ||
+          destination.hostname !== 'office.esforzados.com' ||
+          destination.port !== '' || destination.pathname !== '/' ||
+          !destination.searchParams.has('launch') ||
+          destination.searchParams.get('target') !== expectedTarget) {
+        throw new Error('El gateway devolvió un enlace de Office no autorizado');
+      }
+      if (!popup.closed) popup.location.replace(destination.href);
+    } catch (_) {
+      // Si la sesión de Drive expiró o el gateway está temporalmente fuera
+      // de servicio, conservar la ruta existente de login y el 302 de PHP.
+      if (!popup.closed) popup.location.replace(href);
+    }
+  }
+
   registerDeclarativeApplications(appsWindow) {
     appsWindow.querySelectorAll('[data-launcher-app]').forEach(element => {
       const id = String(element.dataset.launcherApp || '');
@@ -60,7 +99,9 @@ class ArcadeCloudDesktopShell {
       const target = element.getAttribute('target') || '_self';
       this.manager.registerApp(id, {
         multiInstance: true, lifecycle: 'external', launchable: true, title, icon,
-        launch: () => this.window.open(href, target, target === '_blank' ? 'noopener' : undefined)
+        launch: () => (id === 'kde-plasma' || id === 'guacamole')
+          ? this.launchOfficeGateway(href, target)
+          : this.window.open(href, target, target === '_blank' ? 'noopener' : undefined)
       });
     });
   }
@@ -91,6 +132,13 @@ class ArcadeCloudDesktopShell {
       card.classList.toggle('is-selected', index === 0);
       card.setAttribute('role', 'option');
       card.setAttribute('aria-selected', index === 0 ? 'true' : 'false');
+      if (card.dataset.launcherApp === 'kde-plasma' ||
+          card.dataset.launcherApp === 'guacamole') {
+        card.addEventListener('click', event => {
+          event.preventDefault();
+          this.launchOfficeGateway(card.getAttribute('href'), card.getAttribute('target') || '_blank');
+        });
+      }
       card.addEventListener('click', () => this.manager.close('appsWindow'));
       this.launcherGrid.append(card);
     });

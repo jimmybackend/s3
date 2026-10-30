@@ -39,7 +39,10 @@ $assert(str_contains($links, '<strong>Actividad y costos</strong>') && str_conta
 
 $assert(str_contains($shell, "querySelectorAll('[data-launcher-app]')"), 'DesktopShell incorpora las aplicaciones declarativas al registro oficial');
 $assert(str_contains($shell, "lifecycle: 'external', launchable: true"), 'las herramientas remotas se registran como aplicaciones externas lanzables');
-$assert(str_contains($shell, 'launch: () => this.window.open(href, target'), 'el acceso remoto sólo ocurre al ejecutar explícitamente la aplicación');
+$assert(str_contains($shell, "id === 'kde-plasma' || id === 'guacamole'")
+    && str_contains($shell, 'this.launchOfficeGateway(href, target)')
+    && str_contains($shell, "this.window.open(href, target, target === '_blank' ? 'noopener' : undefined)"),
+    'KDE y Guacamole solicitan el enlace Office autenticado; otras aplicaciones mantienen la apertura normal');
 $assert(strpos($shell, 'this.registerDeclarativeApplications(appsWindow);') < strpos($shell, "body.innerHTML = '<label class=\"os-app-search\""), 'el registro captura los destinos reales antes de renderizar el launcher');
 $assert(str_contains($manager, "['terminal',false,'persistent','Consola servidor','fa-terminal']"), 'Consola servidor conserva semántica singleton persistente');
 $assert(!str_contains($manager, "'office-launch.php'") && !str_contains($manager, "'target=guacamole'") && !str_contains($manager, "'kde.esforzados.com'"), 'WindowManager y restore no contienen acciones remotas autoejecutables');

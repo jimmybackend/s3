@@ -77,7 +77,17 @@ try {
 }
 
 $separator = str_contains($officeUrl, '?') ? '&' : '?';
+$destination = $officeUrl . $separator . 'launch=' . rawurlencode($token) . '&target=' . rawurlencode($target);
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
-header('Location: ' . $officeUrl . $separator . 'launch=' . rawurlencode($token) . '&target=' . rawurlencode($target), true, 302);
+// Los accesos KDE/Guacamole del OS pueden pedir el destino autenticado
+// sin mostrar una pestaña intermedia de FastDrive. Conservamos el 302
+// original para usuarios sin JavaScript, archivos Office y reautenticación.
+if ((string)($_GET['format'] ?? '') === 'json') {
+    header('Content-Type: application/json; charset=utf-8');
+    header('X-Content-Type-Options: nosniff');
+    echo json_encode(['ok' => true, 'url' => $destination], JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+    exit;
+}
+header('Location: ' . $destination, true, 302);
 exit;

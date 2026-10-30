@@ -32,7 +32,7 @@ echo "=== 1. PERFIL SECCOMP BASADO EN LA POLÍTICA DE MOBY ==="
 # Playwright recomienda clone, unshare y setns para Chromium.
 # Se añade SOLO esa excepción; se conserva el deny-by-default.
 curl -fLsS --connect-timeout 8 --max-time 25 --retry 1 \
-  https://raw.githubusercontent.com/moby/profiles/main/seccomp/default.json \
+  https://raw.githubusercontent.com/moby/profiles/4b8214fc4971e06172938a1f1554ccff6647ee80/seccomp/default.json \
   -o "$temp_dir/default.json" || {
   echo "No se pudo descargar seccomp oficial; Office no se modificó." >&2
   exit 4

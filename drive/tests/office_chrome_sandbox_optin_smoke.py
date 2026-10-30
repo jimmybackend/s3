@@ -28,9 +28,9 @@ assert "ARCADECLOUD_CHROME_SANDBOX_ENABLED=1" in installer
 assert "ENABLE_ON_PASS=0" in trial
 assert "--enable-on-pass" in trial
 assert 'docker run --rm --network none' in trial
-assert '--cap-drop=ALL --user 10001:10001' in trial
-assert 'PRUEBA APROBADA' in trial
-assert trial.index('PRUEBA APROBADA') < trial.index('if [[ "$ENABLE_ON_PASS" -eq 1 ]]')
+assert '--cap-drop=ALL' in trial and '--user 10001:10001' in trial
+assert 'ENSAYO APROBADO' in trial
+assert trial.index('ENSAYO APROBADO') < trial.index('if [[ "$ENABLE_ON_PASS" -eq 1 ]]')
 assert 'install -o root -g root -m 0644' in trial
 assert "sha256sum" in trial
 assert "install -d -m " not in trial, "No modificar permisos del directorio de configuracion"

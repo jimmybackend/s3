@@ -32,10 +32,27 @@ foreach ($remoteApps as $id => [$label, $href]) {
     $assert(str_contains($apps, 'href="' . $href . '"'), "{$label} conserva su destino real");
     $assert(!str_contains($links, '<strong>' . $label . '</strong>'), "{$label} ya no aparece en Enlaces");
 }
-$assert(str_contains($apps, '<strong>Consola servidor</strong>'), 'Consola servidor está en Aplicaciones');
-$assert(str_contains($apps, '<?php if ($isSuperAdmin): ?>'), 'Consola servidor conserva el guard de render superadmin');
-$assert(!str_contains($links, 'Consola servidor') && !str_contains($links, 'Consola del servidor'), 'Consola servidor ya no aparece en Enlaces');
-$assert(str_contains($links, '<strong>Actividad y costos</strong>') && str_contains($links, '<strong>AWS y códigos TOTP</strong>') && str_contains($links, '<strong>Gestión EC2</strong>') && str_contains($links, '<strong>FederationCloud</strong>'), 'Enlaces conserva todos los accesos no movidos');
+// El texto visible dice «Consola Servidor»; el identificador del WindowManager
+// se mantiene «Consola servidor». No cambiar la interfaz para satisfacer
+// una prueba desactualizada.
+$assert(str_contains($apps, '<strong>Consola Servidor</strong>')
+    && str_contains($apps, 'data-open-terminal'),
+    'Consola Servidor está en Aplicaciones con su accion real');
+$assert(str_contains($apps, '<?php if ($isSuperAdmin): ?>'),
+    'Consola Servidor conserva el guard de render superadmin');
+$assert(!str_contains($links, 'Consola Servidor')
+    && !str_contains($links, 'Consola servidor')
+    && !str_contains($links, 'Consola del servidor'),
+    'Consola Servidor no se duplica en Enlaces');
+$assert(str_contains($apps, '<strong>Actividad y costos</strong>')
+    && str_contains($apps, '<strong>AWS y códigos TOTP</strong>')
+    && str_contains($apps, '<strong>Gestión EC2</strong>'),
+    'Aplicaciones incluye herramientas de actividad, TOTP y gestion EC2');
+$assert(str_contains($links, '<strong>Gestión EC2</strong>')
+    && str_contains($links, '<strong>FederationCloud</strong>')
+    && !str_contains($links, '<strong>Actividad y costos</strong>')
+    && !str_contains($links, '<strong>AWS y códigos TOTP</strong>'),
+    'Enlaces mantiene acceso EC2 y FederationCloud sin duplicar herramientas trasladadas');
 
 $assert(str_contains($shell, "querySelectorAll('[data-launcher-app]')"), 'DesktopShell incorpora las aplicaciones declarativas al registro oficial');
 $assert(str_contains($shell, "lifecycle: 'external', launchable: true"), 'las herramientas remotas se registran como aplicaciones externas lanzables');

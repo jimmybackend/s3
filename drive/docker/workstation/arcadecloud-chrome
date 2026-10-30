@@ -7,11 +7,16 @@ set -euo pipefail
 # el perfil KDE existente y crear uno separado SOLO para las sesiones XRDP.
 PROFILE_DIR="${HOME}/.config/google-chrome"
 
-# Mantener compatibilidad hasta que el ensayo seguro haya superado Chrome.
-# La opción segura sólo se habilita después de instalar un perfil seccomp
-# revisado y superar un arranque completo en contenedor descartable.
+# El lanzador se invoca tanto desde KDE/noVNC como por XRDP/Guacamole.
+# XRDP crea una sesión PAM independiente y puede NO heredar variables
+# Docker (ARCADECLOUD_CHROME_SANDBOX_ENABLED). Por eso leemos únicamente
+# el marcador root-owned instalado por el entrypoint al arrancar, después
+# de que el host verificó SHA-256 del seccomp y probó Chrome sin sandbox off.
+# El marcador se crea en /run (efímero): se regenera en cada arranque del
+# contenedor sólo si Docker recibió el opt-in validado.
+CHROME_SANDBOX_MARKER=/run/arcadecloud-office/chrome-sandbox-enabled
 CHROME_SANDBOX_ARGS=(--no-sandbox)
-if [[ "${ARCADECLOUD_CHROME_SANDBOX_ENABLED:-0}" == "1" ]]; then
+if [[ -f "$CHROME_SANDBOX_MARKER" ]]; then
   CHROME_SANDBOX_ARGS=()
 fi
 

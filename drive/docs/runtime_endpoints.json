@@ -841,6 +841,7 @@
         "drive/tests/dataword3d_contract_smoke.php",
         "drive/tests/index_federation_drop_smoke.php",
         "drive/tests/mobile_capture_contract_smoke.php",
+        "drive/tests/office_dedicated_launcher_smoke.php",
         "drive/tests/office_gateway_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/three-lab/drive3d-lab.php"
@@ -1243,6 +1244,7 @@
         "drive/tests/dataword3d_contract_smoke.php",
         "drive/tests/index_federation_drop_smoke.php",
         "drive/tests/mobile_capture_contract_smoke.php",
+        "drive/tests/office_dedicated_launcher_smoke.php",
         "drive/tests/office_gateway_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/three-lab/drive3d-lab.php"
@@ -1311,6 +1313,7 @@
         "drive/tests/dataword3d_contract_smoke.php",
         "drive/tests/index_federation_drop_smoke.php",
         "drive/tests/mobile_capture_contract_smoke.php",
+        "drive/tests/office_dedicated_launcher_smoke.php",
         "drive/tests/office_gateway_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/three-lab/drive3d-lab.php"
@@ -1492,10 +1495,11 @@
     },
     {
       "path": "drive/office-launch.php",
-      "size": 3260,
+      "size": 3788,
       "active": true,
       "references": [
         "drive/so.php",
+        "drive/tests/office_dedicated_launcher_smoke.php",
         "drive/tests/office_gateway_audio_persistence_smoke.php",
         "drive/tests/office_gateway_contract_smoke.php",
         "drive/tests/office_kde_chrome_launch_smoke.php",
@@ -1741,6 +1745,7 @@
         "drive/tests/dataword3d_contract_smoke.php",
         "drive/tests/index_federation_drop_smoke.php",
         "drive/tests/mobile_capture_contract_smoke.php",
+        "drive/tests/office_dedicated_launcher_smoke.php",
         "drive/tests/office_gateway_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/three-lab/drive3d-lab.php"
@@ -1763,6 +1768,7 @@
         "drive/tests/drive3d_native_action_context_test.php",
         "drive/tests/node_diagnostics_contract_smoke.php",
         "drive/tests/notebook_contract_smoke.php",
+        "drive/tests/office_dedicated_launcher_smoke.php",
         "drive/tests/office_gateway_audio_persistence_smoke.php",
         "drive/tests/office_gateway_contract_smoke.php",
         "drive/tests/office_kde_chrome_launch_smoke.php",
@@ -4681,6 +4687,12 @@
       "references": []
     },
     {
+      "path": "drive/tests/office_dedicated_launcher_smoke.php",
+      "size": 2739,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/tests/office_gateway_audio_persistence_smoke.php",
       "size": 2058,
       "active": false,
@@ -4910,7 +4922,7 @@
     },
     {
       "path": "drive/tests/web_os_remote_applications_smoke.php",
-      "size": 3778,
+      "size": 4636,
       "active": false,
       "references": []
     },

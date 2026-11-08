@@ -1,0 +1,24 @@
+name: Legal read-only API checks
+on:
+  pull_request:
+    paths:
+      - 'drive/src/Integration/**'
+      - 'drive/src/Http/Controller/LegalDriveController.php'
+      - 'drive/api/legal*.php'
+      - 'drive/tests/legal_api_config_test.php'
+      - '.github/workflows/legal-api.yml'
+  push:
+    branches: ['codex/legal-drive-integration']
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax and capability authorization tests
+        run: |
+          set -eu
+          for f in drive/src/Integration/*.php drive/src/Http/Controller/LegalDriveController.php drive/api/legal*.php drive/tests/legal_api_config_test.php drive/tests/fixtures/legal_api_router.php; do php -l "$f"; done
+          php drive/tests/legal_api_config_test.php
+          git diff --check

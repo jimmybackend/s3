@@ -1,0 +1,11 @@
+{
+  "instance_id": "REPLACE_WITH_RANDOM_STABLE_INSTALLATION_ID",
+  "grants": {
+    "legal-admin-7": {
+      "user_id": 1,
+      "token_hash": "REPLACE_WITH_SHA256_OF_RANDOM_32_BYTE_HEX_TOKEN",
+      "enabled": false,
+      "expires_at": 0
+    }
+  }
+}

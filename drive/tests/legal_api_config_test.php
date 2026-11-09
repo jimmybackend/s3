@@ -20,3 +20,14 @@ $iv=random_bytes(12);$tag='';$payload=json_encode(['file'=>123,'mode'=>'open','e
 $cipher=openssl_encrypt($payload,'aes-256-gcm',hash('sha256',"legal-content-v1\0".$g['token_hash'],true),OPENSSL_RAW_DATA,$iv,$tag,'legal7');
 $expired='legal7.'.rtrim(strtr(base64_encode($iv.$tag.$cipher),'+/','-_'),'='); denied(fn()=>$c->redeem($expired),401);
 echo "PASS: grants, explicit identity, opaque tickets, expiry, tampering, rotation, revocation, installation binding\n";
+
+
+$serviceToken=bin2hex(random_bytes(32));$raw['grants']['case-service']=['scope'=>'case-service','token_hash'=>hash('sha256',$serviceToken),'enabled'=>true,'expires_at'=>time()+3600];
+$c=new LegalApiConfig($raw);$service=$c->authenticate('Bearer '.$serviceToken);
+check(!isset($service['user_id']) && $service['scope']==='case-service','Service is not an owner identity');
+$shared=$c->ticket($service,123,'download',['share'=>str_repeat('a',64),'case'=>9]);
+check($c->redeem($shared)['context']['case']===9,'Shared ticket binds the case and authorization reference');
+denied(fn()=>$c->redeem($c->ticket($service,123,'open')),401);
+$r=$raw;$r['grants']['case-service']['enabled']=false;denied(fn()=>(new LegalApiConfig($r))->redeem($shared),401);
+$r=$raw;$r['grants']['case-service']['user_id']=2;denied(fn()=>(new LegalApiConfig($r))->authenticate('Bearer '.$serviceToken),401);
+echo "PASS: service scope, case-bound tickets and immediate service revocation\n";

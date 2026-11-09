@@ -14,19 +14,28 @@ final class LegalDriveController
         header("Content-Security-Policy: sandbox; default-src 'none'; frame-ancestors 'none'");
         try {
             if (($_SERVER['HTTPS']??'')!=='on') throw new \RuntimeException('Se requiere HTTPS.',403);
-            if (($_SERVER['REQUEST_METHOD']??'')!=='GET') throw new \RuntimeException('Método no permitido.',405);
+            $method=$_SERVER['REQUEST_METHOD']??'';
+            if (!in_array($method,['GET','POST'],true) || ($content && $method!=='GET')) throw new \RuntimeException('Método no permitido.',405);
             $config=LegalApiConfig::load(); $service=new LegalDriveService($this->app,$config);
             if ($content) {
-                $ticket=$config->redeem($this->arg('t')); $file=$service->content($ticket['grant'],$ticket['file'],$ticket['mode'],$_SERVER['HTTP_RANGE']??null);
+                $ticket=$config->redeem($this->arg('t')); $file=$service->content($ticket['grant'],$ticket['file'],$ticket['mode'],$_SERVER['HTTP_RANGE']??null,$ticket['context']);
                 header('Content-Type: '.$file['mime']); header('Content-Disposition: '.$file['disposition']); header('Accept-Ranges: bytes');
                 header('Content-Length: '.max(0,$file['end']-$file['start']+1));
                 if ($file['partial']) { http_response_code(206); header('Content-Range: bytes '.$file['start'].'-'.$file['end'].'/'.$file['size']); }
                 while (!$file['body']->eof()) { echo $file['body']->read(65536); if (connection_aborted()) break; }
                 exit;
             }
-            $grant=$config->authenticate($_SERVER['HTTP_AUTHORIZATION']??''); $user=$service->requireUser($grant);
+            $grant=$config->authenticate($_SERVER['HTTP_AUTHORIZATION']??''); $user=($grant['scope']??'owner')==='owner' ? $service->requireUser($grant) : null;
             $action=$this->arg('action','browse');
+            $write=in_array($action,['share','revoke_share'],true);
+            if (($write && $method!=='POST') || (!$write && $method!=='GET')) throw new \RuntimeException('Método no permitido.',405);
+            if ($user===null && !in_array($action,['shared_file','shared_files','shared_access'],true)) throw new \RuntimeException('Operación no autorizada para servicio.',403);
             $data=match($action) {
+                'share'=>$service->share($grant,$this->number('id',0),$this->number('case',0),$this->arg('service'))+['instance'=>$config->instance()],
+                'revoke_share'=>$service->revoke($grant,$this->arg('share'))+['instance'=>$config->instance()],
+                'shared_files'=>$service->sharedFiles($grant,$this->arg('shares'),$this->number('case',0))+['instance'=>$config->instance()],
+                'shared_file'=>['instance'=>$config->instance(),'file'=>LegalDriveService::metadata($service->sharedFile($grant,$this->arg('share'),$this->number('case',0)))],
+                'shared_access'=>$service->sharedAccess($grant,$this->arg('share'),$this->number('case',0),$this->arg('mode','open'))+['instance'=>$config->instance()],
                 'browse'=>$service->browse($user,$this->number('folder',0),$this->arg('q'),$this->number('page',1),$this->number('folder_page',1)),
                 'files'=>$service->files($user,$this->arg('ids')),
                 'file'=>['instance'=>$config->instance(),'file'=>LegalDriveService::metadata($service->file($user,$this->number('id',0)))],
@@ -44,7 +53,7 @@ final class LegalDriveController
     }
     private function arg(string $name,string $default=''): string
     {
-        $v=$_GET[$name]??$default;
+        $v=(($_SERVER['REQUEST_METHOD']??'GET')==='POST' ? $_POST[$name]??null : $_GET[$name]??null)??$default;
         if (!is_string($v) || strlen($v)>2048) throw new \RuntimeException('Solicitud inválida.',400);
         return $v;
     }

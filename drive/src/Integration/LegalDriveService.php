@@ -13,6 +13,7 @@ final class LegalDriveService
 
     public function requireUser(array $grant): int
     {
+        if (($grant['scope']??'owner')!=='owner') throw new RuntimeException('La conexión de servicio no permite explorar Drive.',403);
         $id=(int)$grant['user_id'];
         try { $u=$this->app->userDirectoryRepository()->requireById($id); }
         catch (RuntimeException $e) { throw new RuntimeException('Cuenta no autorizada.',403); }
@@ -68,6 +69,49 @@ final class LegalDriveService
         }
         return ['instance'=>$this->config->instance(),'files'=>$items];
     }
+    public function share(array $owner,int $file,int $case,string $serviceId): array
+    {
+        $user=$this->requireUser($owner);$this->file($user,$file);
+        $service=$this->config->grant($serviceId);
+        if (($service['scope']??'owner')!=='case-service' || $case<1) throw new RuntimeException('Destino no autorizado.',403);
+        $ref=(new LegalFileGrantRepository($this->app->db()))->authorize($user,$owner['id'],$file,$serviceId,$case);
+        return ['share'=>$ref];
+    }
+    public function revoke(array $owner,string $ref): array
+    {
+        (new LegalFileGrantRepository($this->app->db()))->revoke($ref,$this->requireUser($owner));
+        return ['revoked'=>true];
+    }
+    public function sharedFile(array $service,string $ref,int $case): array
+    {
+        if (($service['scope']??'owner')!=='case-service') throw new RuntimeException('Conexión de servicio requerida.',403);
+        $r=(new LegalFileGrantRepository($this->app->db()))->require($ref,$service['id'],$case);
+        $owner=$this->config->grant($r['owner_grant_id']);$user=$this->requireUser($owner);
+        if ($user!==(int)$r['owner_user_id']) throw new RuntimeException('Autorización retirada.',403);
+        return $this->file($user,(int)$r['file_id']);
+    }
+    public function sharedFiles(array $service,string $refs,int $case): array
+    {
+        if (($service['scope']??'owner')!=='case-service') throw new RuntimeException('Conexión de servicio requerida.',403);
+        if (!preg_match('/^[a-f0-9]{64}(,[a-f0-9]{64}){0,29}$/D',$refs)) throw new RuntimeException('Selección inválida.',400);
+        $items=[];
+        foreach (array_unique(explode(',',$refs)) as $ref) {
+            try { $items[]=['share'=>$ref,'status'=>200,'file'=>self::metadata($this->sharedFile($service,$ref,$case))]; }
+            catch (RuntimeException $e) {
+                if (!in_array($e->getCode(),[401,403,404,423],true)) throw $e;
+                $items[]=['share'=>$ref,'status'=>$e->getCode()];
+            }
+        }
+        return ['files'=>$items];
+    }
+    public function sharedAccess(array $service,string $ref,int $case,string $mode): array
+    {
+        $row=$this->sharedFile($service,$ref,$case);
+        if (!in_array($mode,['open','download'],true)) throw new RuntimeException('Operación inválida.',400);
+        try { $this->app->s3()->headObject(['Bucket'=>$this->app->bucket(),'Key'=>$row['_key']]); }
+        catch (\Aws\S3\Exception\S3Exception $e) { throw new RuntimeException('Contenido no disponible.', $e->getStatusCode()===404 ? 404 : 503); }
+        return ['ticket'=>$this->config->ticket($service,(int)$row['id_'],$mode,['share'=>$ref,'case'=>$case]),'expires_in'=>120];
+    }
     public function access(array $grant, int $file, string $mode): array
     {
         $user=$this->requireUser($grant); $row=$this->file($user,$file);
@@ -77,9 +121,10 @@ final class LegalDriveService
         catch (\Aws\S3\Exception\S3Exception $e) { throw new RuntimeException('Contenido no disponible.', $e->getStatusCode()===404 ? 404 : 503); }
         return ['ticket'=>$this->config->ticket($grant,$file,$mode),'expires_in'=>120];
     }
-    public function content(array $grant, int $file, string $mode, ?string $range): array
+    public function content(array $grant, int $file, string $mode, ?string $range, array $context=[]): array
     {
-        $row=$this->file($this->requireUser($grant),$file);
+        $row=($grant['scope']??'owner')==='case-service' ? $this->sharedFile($grant,(string)($context['share']??''),(int)($context['case']??0)) : $this->file($this->requireUser($grant),$file);
+        if ((int)$row['id_']!==$file) throw new RuntimeException('Archivo no disponible.',404);
         $args=['Bucket'=>$this->app->bucket(),'Key'=>$row['_key']];
         try {
             $head=$this->app->s3()->headObject($args); $size=(int)$head['ContentLength'];

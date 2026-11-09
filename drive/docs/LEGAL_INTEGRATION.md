@@ -1,3 +1,5 @@
+> Ampliación: existe ahora una delegación explícita por archivo/expediente para usuarios de Legal sin cuenta de Drive. Consulte [LEGAL_CASE_SHARING.md](LEGAL_CASE_SHARING.md). Las conexiones personales y sus restricciones permanecen; ninguna fila se comparte automáticamente.
+
 # Archivos de ArcadeCloud Drive en Legal — fase 1
 
 ## Arquitectura e identidad

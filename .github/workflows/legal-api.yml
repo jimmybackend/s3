@@ -27,4 +27,3 @@ jobs:
           python3 -m py_compile drive/bin/provision_legal_case_service.py
           python3 drive/tests/legal_service_provision_test.py
           git diff --check
-

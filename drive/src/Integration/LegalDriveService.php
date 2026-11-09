@@ -146,4 +146,3 @@ final class LegalDriveService
             'disposition'=>($inline ? 'inline' : 'attachment')."; filename=\"archivo\"; filename*=UTF-8''".rawurlencode($name)];
     }
 }
-

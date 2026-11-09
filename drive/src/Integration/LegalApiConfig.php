@@ -78,4 +78,3 @@ final class LegalApiConfig
 
     private function key(array $grant): string { return hash('sha256', "legal-content-v1\0".$grant['token_hash'], true); }
 }
-

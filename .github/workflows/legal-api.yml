@@ -3,6 +3,9 @@ on:
   pull_request:
     paths:
       - 'drive/src/Integration/**'
+      - 'drive/src/Sharing/**'
+      - 'drive/src/Http/Controller/PublicShareController.php'
+      - 'drive/tests/legal_timed_token_store_test.php'
       - 'drive/src/Http/Controller/LegalDriveController.php'
       - 'drive/api/legal*.php'
       - 'drive/migrations/*legal*'
@@ -22,8 +25,9 @@ jobs:
       - name: Syntax and capability authorization tests
         run: |
           set -eu
-          for f in drive/src/Integration/*.php drive/src/Http/Controller/LegalDriveController.php drive/api/legal*.php drive/tests/legal_api_config_test.php drive/tests/fixtures/legal_api_router.php; do php -l "$f"; done
+          for f in drive/src/Integration/*.php drive/src/Sharing/*.php drive/src/Http/Controller/PublicShareController.php drive/src/Http/Controller/LegalDriveController.php drive/api/legal*.php drive/tests/legal_api_config_test.php drive/tests/fixtures/legal_api_router.php; do php -l "$f"; done
           php drive/tests/legal_api_config_test.php
+          php drive/tests/legal_timed_token_store_test.php
           python3 -m py_compile drive/bin/provision_legal_case_service.py
           python3 drive/tests/legal_service_provision_test.py
           git diff --check

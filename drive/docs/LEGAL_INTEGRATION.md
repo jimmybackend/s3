@@ -1,3 +1,5 @@
+> Modalidad actual por días: [LEGAL_TIMED_LINKS.md](LEGAL_TIMED_LINKS.md). Genera la URL habitual del escritorio y registra automáticamente el documento en Legal; 365 días por defecto. Las delegaciones privadas previas se conservan.
+
 > Ampliación: existe ahora una delegación explícita por archivo/expediente para usuarios de Legal sin cuenta de Drive. Consulte [LEGAL_CASE_SHARING.md](LEGAL_CASE_SHARING.md). Las conexiones personales y sus restricciones permanecen; ninguna fila se comparte automáticamente.
 
 # Archivos de ArcadeCloud Drive en Legal — fase 1

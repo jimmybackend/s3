@@ -3,6 +3,13 @@ declare(strict_types=1);
 namespace Aws\S3 {
     /** S3 bytes are deliberately simulated; no AWS calls or credentials in integration tests. */
     class S3Client {
+        public function getCommand(string $name,array $args): array { return $args; }
+        public function createPresignedRequest(array $args,string $ttl): object {
+            return new class($args) {
+                public function __construct(private array $args) {}
+                public function getUri(): string { return 'https://objects.example.invalid/fixture?'.http_build_query(['key'=>$this->args['Key'],'disposition'=>$this->args['ResponseContentDisposition']??'inline']); }
+            };
+        }
         public function headObject(array $args): array {
             if (str_contains($args['Key'],'missing')) throw new \Aws\S3\Exception\S3Exception('missing',404);
             return ['ContentLength'=>12,'ContentType'=>'application/pdf'];
@@ -36,5 +43,10 @@ namespace {
     $db->set_charset('utf8mb4');
     $_SERVER['HTTPS']='on';
     $app=\ArcadeCloud\Drive\Core\DriveApplication::boot($db);
+    (new \ReflectionProperty($app,'shareTokenStore'))->setValue($app,new \ArcadeCloud\Drive\Sharing\ShareTokenStore(getenv('TEST_SHARE_TOKEN_STORE')));
+    $path=parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH);
+    if (in_array($path,['/token_texto.php','/token_audio.php','/token_video.php'],true)) {
+        (new \ArcadeCloud\Drive\Http\Controller\PublicShareController($app,\ArcadeCloud\Drive\Http\Request::fromGlobals()))->handle(match($path){'/token_audio.php'=>'audio','/token_video.php'=>'video',default=>'texto'});exit;
+    }
     (new \ArcadeCloud\Drive\Http\Controller\LegalDriveController($app))->dispatch(parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH)==='/api/legal-content.php');
 }

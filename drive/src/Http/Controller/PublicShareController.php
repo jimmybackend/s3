@@ -22,6 +22,7 @@ final class PublicShareController
 
     public function handle(string $endpointKind): void
     {
+        $this->securityHeaders();
         if ($this->request->method() === 'POST') {
             $this->handlePrivatePost($endpointKind);
             return;
@@ -37,6 +38,7 @@ final class PublicShareController
 
     public function legacy(): void
     {
+        $this->securityHeaders();
         if ($this->request->method() !== 'GET') {
             $this->renderError(new ShareException('Método no permitido.', 405));
             return;
@@ -52,7 +54,7 @@ final class PublicShareController
                 throw new ShareException('Falta parámetro de token.', 400);
             }
 
-            $share = $this->app->shareAccessService()->publicToken($token);
+            $share = $this->app->shareAccessService()->publicToken($token,$this->request->hasQuery('download'));
 
             if ($this->request->hasQuery('direct') || $this->request->hasQuery('download')) {
                 header('Location: ' . (string)$share['url']);
@@ -119,7 +121,7 @@ final class PublicShareController
             $token = $this->request->queryString('t');
 
             if ($token !== '') {
-                $share = $this->app->shareAccessService()->publicToken($token);
+                $share = $this->app->shareAccessService()->publicToken($token,$this->request->hasQuery('download'));
             } else {
                 $key = $this->request->queryString(
                     'archivo',
@@ -197,6 +199,13 @@ final class PublicShareController
         }
 
         return $session->userId();
+    }
+
+    private function securityHeaders(): void
+    {
+        header('Cache-Control: no-store, private');
+        header('Referrer-Policy: no-referrer');
+        header('X-Robots-Tag: noindex, nofollow');
     }
 
     private function renderError(ShareException $e): void

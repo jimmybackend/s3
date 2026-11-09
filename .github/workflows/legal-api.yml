@@ -1,11 +1,14 @@
-name: Legal read-only API checks
+name: Legal file access and delegation checks
 on:
   pull_request:
     paths:
       - 'drive/src/Integration/**'
       - 'drive/src/Http/Controller/LegalDriveController.php'
       - 'drive/api/legal*.php'
+      - 'drive/migrations/*legal*'
+      - 'drive/bin/provision_legal_case_service.py'
       - 'drive/tests/legal_api_config_test.php'
+      - 'drive/tests/legal_service_provision_test.py'
       - '.github/workflows/legal-api.yml'
   push:
     branches: ['codex/legal-drive-integration']
@@ -21,4 +24,7 @@ jobs:
           set -eu
           for f in drive/src/Integration/*.php drive/src/Http/Controller/LegalDriveController.php drive/api/legal*.php drive/tests/legal_api_config_test.php drive/tests/fixtures/legal_api_router.php; do php -l "$f"; done
           php drive/tests/legal_api_config_test.php
+          python3 -m py_compile drive/bin/provision_legal_case_service.py
+          python3 drive/tests/legal_service_provision_test.py
           git diff --check
+

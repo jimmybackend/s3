@@ -6,6 +6,13 @@
       "token_hash": "REPLACE_WITH_SHA256_OF_RANDOM_32_BYTE_HEX_TOKEN",
       "enabled": false,
       "expires_at": 0
+    },
+    "legal-case-service": {
+      "scope": "case-service",
+      "token_hash": "REPLACE_WITH_DISTINCT_SERVICE_TOKEN_SHA256",
+      "enabled": false,
+      "expires_at": 0
     }
   }
 }
+

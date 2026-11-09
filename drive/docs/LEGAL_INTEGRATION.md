@@ -1,3 +1,5 @@
+> Ampliación: existe ahora una delegación explícita por archivo/expediente para usuarios de Legal sin cuenta de Drive. Consulte [LEGAL_CASE_SHARING.md](LEGAL_CASE_SHARING.md). Las conexiones personales y sus restricciones permanecen; ninguna fila se comparte automáticamente.
+
 # Archivos de ArcadeCloud Drive en Legal — fase 1
 
 ## Arquitectura e identidad
@@ -80,3 +82,4 @@ Para revocar, poner `enabled:false` o retirar el grant de la configuración priv
 Las pruebas de capacidades y el flujo HTTP entre ambos repositorios pasaron con PHP 8.3 y MariaDB 10.11 local, con almacenamiento S3 simulado. También pasaron sintaxis PHP, JavaScript, resolución de configuración privada y pruebas existentes de roles/permisos. Se confirmó que nueve pruebas estáticas fallaban ya en el baseline de Legal; se actualizó únicamente la prueba de consistencia de esquema afectada para incluir la nueva tabla y reconocer el login administrativo que ya existe. Las ocho restantes siguen pendientes y no se deben presentar como un CI global verde.
 
 La prueba visual móvil está disponible con `TEST_UI=1`, Node, Playwright y Chromium instalados (`tests/drive_mobile_test.cjs`). Comprueba ancho de 390 px, selección de cliente/expediente, controles por permiso y apertura entre orígenes con CSP. No pudo ejecutarse en este entorno porque no estaba disponible el binario de Chromium y su descarga falló. La verificación visual en navegador/móvil queda pendiente; los controles usan diseño adaptable y objetivos de 44 px.
+

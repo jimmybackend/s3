@@ -39,7 +39,10 @@ final class LegalApiConfig
     {
         $g = $this->config['grants'][$id] ?? null;
         if (!preg_match('/^[a-zA-Z0-9_-]{1,64}$/D', $id) || !is_array($g)
-            || ($g['enabled'] ?? false) !== true || !is_int($g['user_id'] ?? null) || $g['user_id'] < 1
+            || ($g['enabled'] ?? false) !== true
+            || !in_array($g['scope']??'owner',['owner','case-service'],true)
+            || (($g['scope']??'owner')==='owner' && (!is_int($g['user_id']??null) || $g['user_id']<1))
+            || (($g['scope']??'owner')==='case-service' && isset($g['user_id']))
             || !is_int($g['expires_at'] ?? null) || $g['expires_at'] <= time()
             || !is_string($g['token_hash'] ?? null) || !preg_match('/^[a-f0-9]{64}$/D', $g['token_hash'])) {
             throw new RuntimeException('Autorización revocada o vencida.', 401);
@@ -48,10 +51,10 @@ final class LegalApiConfig
     }
 
     /** Short-lived opaque capability; revocation/expiry/account/file are rechecked on redemption. */
-    public function ticket(array $grant, int $fileId, string $mode): string
+    public function ticket(array $grant, int $fileId, string $mode, array $context=[]): string
     {
         $iv = random_bytes(12); $tag = '';
-        $json = json_encode(['file' => $fileId, 'mode' => $mode, 'exp' => time()+120, 'instance' => $this->instance()], JSON_THROW_ON_ERROR);
+        $json = json_encode(['file' => $fileId, 'mode' => $mode, 'exp' => time()+120, 'instance' => $this->instance()]+$context, JSON_THROW_ON_ERROR);
         $cipher = openssl_encrypt($json, 'aes-256-gcm', $this->key($grant), OPENSSL_RAW_DATA, $iv, $tag, $grant['id']);
         if ($cipher === false) throw new RuntimeException('No se pudo emitir acceso.', 503);
         return $grant['id'] . '.' . rtrim(strtr(base64_encode($iv.$tag.$cipher), '+/', '-_'), '=');
@@ -68,8 +71,11 @@ final class LegalApiConfig
         if (!is_array($p) || !is_int($p['exp'] ?? null) || $p['exp'] <= time() || $p['exp'] > time()+120
             || ($p['instance'] ?? '') !== $this->instance() || !is_int($p['file'] ?? null) || $p['file'] < 1
             || !in_array($p['mode'] ?? '', ['open','download'], true)) throw new RuntimeException('Enlace vencido o inválido.', 401);
-        return ['grant'=>$g, 'file'=>$p['file'], 'mode'=>$p['mode']];
+        $shared=($g['scope']??'owner')==='case-service';
+        if ($shared && (!is_string($p['share']??null) || !preg_match('/^[a-f0-9]{64}$/D',$p['share']) || !is_int($p['case']??null) || $p['case']<1)) throw new RuntimeException('Enlace inválido.',401);
+        return ['grant'=>$g, 'file'=>$p['file'], 'mode'=>$p['mode'],'context'=>$shared?['share'=>$p['share'],'case'=>$p['case']]:[]];
     }
 
     private function key(array $grant): string { return hash('sha256', "legal-content-v1\0".$grant['token_hash'], true); }
 }
+

@@ -71,6 +71,20 @@
       ]
     },
     {
+      "path": "drive/api/legal-content.php",
+      "size": 214,
+      "active": false,
+      "references": [
+        "drive/tests/fixtures/legal_api_router.php"
+      ]
+    },
+    {
+      "path": "drive/api/legal.php",
+      "size": 210,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/api/native.php",
       "size": 269,
       "active": false,
@@ -103,6 +117,8 @@
       "references": [
         "drive/activity_costs.php",
         "drive/actualizar_ruta.php",
+        "drive/api/legal-content.php",
+        "drive/api/legal.php",
         "drive/api/native.php",
         "drive/api/upload.php",
         "drive/background_tasks.php",
@@ -841,6 +857,7 @@
         "drive/tests/dataword3d_contract_smoke.php",
         "drive/tests/index_federation_drop_smoke.php",
         "drive/tests/mobile_capture_contract_smoke.php",
+        "drive/tests/office_dedicated_launcher_smoke.php",
         "drive/tests/office_gateway_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/three-lab/drive3d-lab.php"
@@ -1243,6 +1260,7 @@
         "drive/tests/dataword3d_contract_smoke.php",
         "drive/tests/index_federation_drop_smoke.php",
         "drive/tests/mobile_capture_contract_smoke.php",
+        "drive/tests/office_dedicated_launcher_smoke.php",
         "drive/tests/office_gateway_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/three-lab/drive3d-lab.php"
@@ -1311,6 +1329,7 @@
         "drive/tests/dataword3d_contract_smoke.php",
         "drive/tests/index_federation_drop_smoke.php",
         "drive/tests/mobile_capture_contract_smoke.php",
+        "drive/tests/office_dedicated_launcher_smoke.php",
         "drive/tests/office_gateway_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/three-lab/drive3d-lab.php"
@@ -1492,10 +1511,11 @@
     },
     {
       "path": "drive/office-launch.php",
-      "size": 3260,
+      "size": 3788,
       "active": true,
       "references": [
         "drive/so.php",
+        "drive/tests/office_dedicated_launcher_smoke.php",
         "drive/tests/office_gateway_audio_persistence_smoke.php",
         "drive/tests/office_gateway_contract_smoke.php",
         "drive/tests/office_kde_chrome_launch_smoke.php",
@@ -1741,6 +1761,7 @@
         "drive/tests/dataword3d_contract_smoke.php",
         "drive/tests/index_federation_drop_smoke.php",
         "drive/tests/mobile_capture_contract_smoke.php",
+        "drive/tests/office_dedicated_launcher_smoke.php",
         "drive/tests/office_gateway_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/three-lab/drive3d-lab.php"
@@ -1763,6 +1784,7 @@
         "drive/tests/drive3d_native_action_context_test.php",
         "drive/tests/node_diagnostics_contract_smoke.php",
         "drive/tests/notebook_contract_smoke.php",
+        "drive/tests/office_dedicated_launcher_smoke.php",
         "drive/tests/office_gateway_audio_persistence_smoke.php",
         "drive/tests/office_gateway_contract_smoke.php",
         "drive/tests/office_kde_chrome_launch_smoke.php",
@@ -3281,6 +3303,12 @@
       "references": []
     },
     {
+      "path": "drive/src/Http/Controller/LegalDriveController.php",
+      "size": 5981,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/src/Http/Controller/LoginErrorController.php",
       "size": 5152,
       "active": true,
@@ -3361,7 +3389,7 @@
     },
     {
       "path": "drive/src/Http/Controller/PublicShareController.php",
-      "size": 6723,
+      "size": 7074,
       "active": false,
       "references": []
     },
@@ -3469,6 +3497,32 @@
       "references": [
         "drive/tests/native_authentication_regression.php"
       ]
+    },
+    {
+      "path": "drive/src/Integration/LegalApiConfig.php",
+      "size": 4608,
+      "active": false,
+      "references": [
+        "drive/tests/legal_api_config_test.php"
+      ]
+    },
+    {
+      "path": "drive/src/Integration/LegalCatalogRepository.php",
+      "size": 3202,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Integration/LegalDriveService.php",
+      "size": 12237,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Integration/LegalFileGrantRepository.php",
+      "size": 1943,
+      "active": false,
+      "references": []
     },
     {
       "path": "drive/src/Mail/SmtpConfig.php",
@@ -3852,7 +3906,7 @@
     },
     {
       "path": "drive/src/Sharing/ShareAccessService.php",
-      "size": 3090,
+      "size": 3950,
       "active": false,
       "references": []
     },
@@ -3860,31 +3914,35 @@
       "path": "drive/src/Sharing/ShareException.php",
       "size": 383,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/legal_timed_token_store_test.php"
+      ]
     },
     {
       "path": "drive/src/Sharing/ShareFileRepository.php",
-      "size": 2065,
+      "size": 3160,
       "active": false,
       "references": []
     },
     {
       "path": "drive/src/Sharing/ShareLinkService.php",
-      "size": 2255,
+      "size": 2487,
       "active": false,
       "references": []
     },
     {
       "path": "drive/src/Sharing/ShareObjectStorage.php",
-      "size": 790,
+      "size": 1082,
       "active": false,
       "references": []
     },
     {
       "path": "drive/src/Sharing/ShareTokenStore.php",
-      "size": 3716,
+      "size": 5160,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/legal_timed_token_store_test.php"
+      ]
     },
     {
       "path": "drive/src/Storage/FileRecordRepository.php",
@@ -4537,6 +4595,12 @@
       "references": []
     },
     {
+      "path": "drive/tests/fixtures/legal_api_router.php",
+      "size": 3327,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/tests/folder_deletion_regression.php",
       "size": 6154,
       "active": false,
@@ -4587,6 +4651,18 @@
     {
       "path": "drive/tests/large_folder_regression.php",
       "size": 2614,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/legal_api_config_test.php",
+      "size": 3234,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/legal_timed_token_store_test.php",
+      "size": 1976,
       "active": false,
       "references": []
     },
@@ -4677,6 +4753,12 @@
     {
       "path": "drive/tests/office_conditional_save_regression.php",
       "size": 9554,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/office_dedicated_launcher_smoke.php",
+      "size": 2739,
       "active": false,
       "references": []
     },
@@ -4910,7 +4992,7 @@
     },
     {
       "path": "drive/tests/web_os_remote_applications_smoke.php",
-      "size": 3778,
+      "size": 4636,
       "active": false,
       "references": []
     },
@@ -4971,6 +5053,7 @@
       "active": false,
       "references": [
         "drive/src/Sharing/ShareLinkService.php",
+        "drive/tests/fixtures/legal_api_router.php",
         "drive/js/media-processing.js"
       ]
     },
@@ -4980,7 +5063,8 @@
       "active": false,
       "references": [
         "drive/src/Sharing/ShareLinkService.php",
-        "drive/tests/federation_access_message_smoke.php"
+        "drive/tests/federation_access_message_smoke.php",
+        "drive/tests/fixtures/legal_api_router.php"
       ]
     },
     {
@@ -4989,6 +5073,7 @@
       "active": false,
       "references": [
         "drive/src/Sharing/ShareLinkService.php",
+        "drive/tests/fixtures/legal_api_router.php",
         "drive/js/audiovideo.js",
         "drive/js/media-processing.js"
       ]

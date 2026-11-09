@@ -1,3 +1,5 @@
+> Modalidad actual por días: [LEGAL_TIMED_LINKS.md](LEGAL_TIMED_LINKS.md). Genera la URL habitual del escritorio y registra automáticamente el documento en Legal; 365 días por defecto. Las delegaciones privadas previas se conservan.
+
 # Delegación expresa de archivos para expedientes de Legal
 
 La API personal sigue restringida al propietario de Drive configurado. El propietario puede ahora autorizar por POST un archivo para un expediente concreto y una audiencia de servidor `case-service`. Esa autorización no cambia archivos, carpetas, visibilidad pública, propietario ni permisos del escritorio de Drive.

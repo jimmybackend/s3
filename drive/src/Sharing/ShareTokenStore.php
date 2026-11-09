@@ -12,7 +12,7 @@ final class ShareTokenStore
     {
     }
 
-    public function create(array $payload): string
+    public function create(array $payload, ?string $replaceBridgeToken=null): string
     {
         $handle = @fopen($this->path, 'c+');
         if ($handle === false) {
@@ -26,6 +26,12 @@ final class ShareTokenStore
 
             $tokens = $this->withoutExpired($this->readFromHandle($handle));
 
+            if ($replaceBridgeToken!==null) {
+                if (!preg_match('/^[a-f0-9]{32}$/D',$replaceBridgeToken) || ($payload['legal_bridge']??false)!==true) throw new ShareException('Renovación inválida.',400);
+                $previous=$tokens[$replaceBridgeToken]??null;
+                if ($previous!==null && (!is_array($previous) || ($previous['legal_bridge']??false)!==true || (int)($previous['user_id']??0)!==(int)$payload['user_id'] || (int)($previous['file_id']??0)!==(int)$payload['file_id'])) throw new ShareException('No puede renovar ese enlace.',403);
+                unset($tokens[$replaceBridgeToken]);
+            }
             do {
                 $token = bin2hex(random_bytes(16));
             } while (isset($tokens[$token]));
@@ -65,6 +71,19 @@ final class ShareTokenStore
         } finally {
             fclose($handle);
         }
+    }
+
+    public function revokeBridge(string $token,int $owner): void
+    {
+        if (!preg_match('/^[a-f0-9]{32}$/D',$token) || $owner<1) throw new ShareException('Enlace no disponible.',404);
+        $h=@fopen($this->path,'r+');
+        if ($h===false) throw new ShareException('Enlace no disponible.',404);
+        try {
+            if (!flock($h,LOCK_EX)) throw new ShareException('No se pudo retirar el enlace.',503);
+            $all=$this->readFromHandle($h);$p=$all[$token]??null;
+            if (!is_array($p) || ($p['legal_bridge']??false)!==true || (int)($p['user_id']??0)!==$owner) throw new ShareException('Enlace no disponible.',404);
+            unset($all[$token]);$this->writeToHandle($h,$all);
+        } finally { flock($h,LOCK_UN);fclose($h); }
     }
 
     private function readFromHandle($handle): array

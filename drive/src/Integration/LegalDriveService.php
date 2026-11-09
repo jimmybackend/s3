@@ -69,6 +69,41 @@ final class LegalDriveService
         }
         return ['instance'=>$this->config->instance(),'files'=>$items];
     }
+    public function timedShare(array $owner,int $file,int $days,string $previous=''): array
+    {
+        if ($days<1 || $days>3650) throw new RuntimeException('Seleccione entre 1 y 3650 días.',400);
+        $user=$this->requireUser($owner);$row=$this->file($user,$file);
+        $ext=strtolower(pathinfo((string)$row['Nombre'],PATHINFO_EXTENSION));
+        $type=match(true) {
+            in_array($ext,['mp3','wav','ogg','opus','m4a','flac','amr'],true)=>'audio',
+            in_array($ext,['mp4','webm','mov','avi','mkv'],true)=>'video',
+            in_array($ext,['jpg','jpeg','png','gif','webp','bmp','avif','tif','tiff'],true)=>'imagen',
+            default=>'otro',
+        };
+        try {
+            $this->app->s3()->headObject(['Bucket'=>$this->app->bucket(),'Key'=>$row['_key']]);
+            $r=$this->app->shareLinkService()->create($user,$row['_key'],$type,$days,true,$previous!==''?$previous:null);
+        } catch (\ArcadeCloud\Drive\Sharing\ShareException $e) { throw new RuntimeException($e->getMessage(),$e->httpStatus()); }
+        catch (\Aws\S3\Exception\S3Exception $e) { throw new RuntimeException('Contenido no disponible.',$e->getStatusCode()===404?404:503); }
+        return ['token'=>$r['token'],'endpoint'=>$r['endpoint'],'expires_at'=>$r['expira_iso'],'days'=>$r['dias'],'file'=>self::metadata($row)];
+    }
+    public function timedStatus(string $token): array
+    {
+        if (!preg_match('/^[a-f0-9]{32}$/D',$token)) throw new RuntimeException('Enlace no disponible.',404);
+        $p=$this->app->shareTokenStore()->find($token);
+        if (!$p || ($p['legal_bridge']??false)!==true) throw new RuntimeException('Enlace retirado o no disponible.',404);
+        if (new \DateTimeImmutable((string)$p['expira']) <= new \DateTimeImmutable('now')) throw new RuntimeException('Enlace vencido. El propietario debe renovarlo.',410);
+        // The URL is a bearer share, like the desktop's link, not a borrowed owner API credential.
+        try { $f=$this->app->shareFileRepository()->requireStableOwnedById((int)$p['user_id'],(int)$p['file_id']); }
+        catch (\ArcadeCloud\Drive\Sharing\ShareException $e) { throw new RuntimeException($e->getMessage(),$e->httpStatus()); }
+        return ['file'=>self::metadata($f),'expires_at'=>$p['expira'],'days'=>(int)$p['dias']];
+    }
+    public function revokeTimedShare(array $owner,string $token): array
+    {
+        try { $this->app->shareTokenStore()->revokeBridge($token,$this->requireUser($owner)); }
+        catch (\ArcadeCloud\Drive\Sharing\ShareException $e) { throw new RuntimeException($e->getMessage(),$e->httpStatus()); }
+        return ['revoked'=>true];
+    }
     public function share(array $owner,int $file,int $case,string $serviceId): array
     {
         $user=$this->requireUser($owner);$this->file($user,$file);

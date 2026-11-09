@@ -62,6 +62,20 @@ final class ShareFileRepository
         throw new ShareException('Archivo no encontrado para este usuario.', 404);
     }
 
+    /** New bridge links resolve the stable catalog id and recheck protections on every use. */
+    public function requireStableOwnedById(int $userId,int $id): array
+    {
+        try {
+            $user=(new \ArcadeCloud\Drive\Security\UserDirectoryRepository($this->db))->requireById($userId);
+            if ($user['userstatus']!=='Activo') throw new ShareException('Propietario no autorizado.',403);
+            $file=(new \ArcadeCloud\Drive\Storage\FileRecordRepository($this->db))->requireByRef($userId,$id,true);
+            (new \ArcadeCloud\Drive\Integration\LegalCatalogRepository($this->db))->requireReadableRoute($userId,(string)$file['Ruta'],(new \ArcadeCloud\Drive\Storage\UserStoragePath())->rootForUser($userId));
+            if (FileViewHelper::isLocked($file)) throw new ShareException('Archivo protegido.',423);
+            return $file;
+        } catch (ShareException $e) { throw $e; }
+        catch (\RuntimeException $e) { throw new ShareException('Archivo retirado, protegido o sin autorización.',in_array($e->getCode(),[403,404,423],true)?$e->getCode():404); }
+    }
+
     private function normalizeKey(string $key): string
     {
         $key = str_replace('\\', '/', trim($key));

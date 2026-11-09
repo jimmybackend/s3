@@ -17,9 +17,10 @@ final class ShareLinkService
         $this->timezone = new DateTimeZone('America/Merida');
     }
 
-    public function create(int $userId, string $requestedKey, string $type, int $days): array
+    public function create(int $userId, string $requestedKey, string $type, int $days, bool $stableReference=false, ?string $replaceBridgeToken=null): array
     {
         $file = $this->files->requireOwnedByKey($userId, $requestedKey);
+        if ($stableReference) $file=$this->files->requireStableOwnedById($userId,(int)$file['id_']);
         $key = (string)$file['_key'];
         $type = $this->normalizeType($type);
         $days = max(1, min($days, 3650));
@@ -38,6 +39,7 @@ final class ShareLinkService
         }
 
         $token = $this->tokens->create([
+            'legal_bridge' => $stableReference,
             'archivo_key' => $key,
             'tipo' => $type,
             'dias' => $days,
@@ -47,7 +49,7 @@ final class ShareLinkService
             'user_id' => $userId,
             'file_id' => (int)($file['id_'] ?? 0),
             'nombre' => (string)($file['Nombre'] ?? basename($key)),
-        ]);
+        ],$replaceBridgeToken);
 
         return [
             'token' => $token,

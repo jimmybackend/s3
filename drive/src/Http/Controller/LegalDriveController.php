@@ -25,12 +25,19 @@ final class LegalDriveController
                 while (!$file['body']->eof()) { echo $file['body']->read(65536); if (connection_aborted()) break; }
                 exit;
             }
+            if ($this->arg('action')==='timed_status') {
+                if ($method!=='GET') throw new \RuntimeException('Método no permitido.',405);
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode(['ok'=>true,'instance'=>$config->instance()]+$service->timedStatus($this->arg('token')),JSON_THROW_ON_ERROR);exit;
+            }
             $grant=$config->authenticate($_SERVER['HTTP_AUTHORIZATION']??''); $user=($grant['scope']??'owner')==='owner' ? $service->requireUser($grant) : null;
             $action=$this->arg('action','browse');
-            $write=in_array($action,['share','revoke_share'],true);
+            $write=in_array($action,['share','revoke_share','timed_share','timed_revoke'],true);
             if (($write && $method!=='POST') || (!$write && $method!=='GET')) throw new \RuntimeException('Método no permitido.',405);
             if ($user===null && !in_array($action,['shared_file','shared_files','shared_access'],true)) throw new \RuntimeException('Operación no autorizada para servicio.',403);
             $data=match($action) {
+                'timed_share'=>$service->timedShare($grant,$this->number('id',0),$this->number('days',365),$this->arg('previous'))+['instance'=>$config->instance()],
+                'timed_revoke'=>$service->revokeTimedShare($grant,$this->arg('token'))+['instance'=>$config->instance()],
                 'share'=>$service->share($grant,$this->number('id',0),$this->number('case',0),$this->arg('service'))+['instance'=>$config->instance()],
                 'revoke_share'=>$service->revoke($grant,$this->arg('share'))+['instance'=>$config->instance()],
                 'shared_files'=>$service->sharedFiles($grant,$this->arg('shares'),$this->number('case',0))+['instance'=>$config->instance()],
@@ -45,10 +52,10 @@ final class LegalDriveController
             header('Content-Type: application/json; charset=utf-8'); echo json_encode(['ok'=>true]+$data,JSON_THROW_ON_ERROR); exit;
         } catch (\Throwable $e) {
             if (headers_sent()) { error_log('Legal Drive content interrupted: '.get_class($e)); exit; }
-            $code=in_array($e->getCode(),[400,401,403,404,405,416,423,503],true)?$e->getCode():503;
+            $code=in_array($e->getCode(),[400,401,403,404,405,410,416,423,503],true)?$e->getCode():503;
             if ($code===503) error_log('Legal Drive API: '.get_class($e));
             http_response_code($code); header('Content-Type: application/json; charset=utf-8');
-            echo json_encode(['ok'=>false,'error'=>match($code){401=>'Autorización vencida o revocada.',403=>'Acceso no autorizado.',404=>'Archivo o carpeta no disponible.',423=>'Archivo o carpeta protegido.',400=>'Solicitud inválida.',405=>'Método no permitido.',416=>'Rango inválido.',default=>'Drive no disponible temporalmente.'}]); exit;
+            echo json_encode(['ok'=>false,'error'=>match($code){401=>'Autorización vencida o revocada.',403=>'Acceso no autorizado.',410=>'Enlace vencido. El propietario debe renovarlo.',404=>'Archivo o carpeta no disponible.',423=>'Archivo o carpeta protegido.',400=>'Solicitud inválida.',405=>'Método no permitido.',416=>'Rango inválido.',default=>'Drive no disponible temporalmente.'}]); exit;
         }
     }
     private function arg(string $name,string $default=''): string

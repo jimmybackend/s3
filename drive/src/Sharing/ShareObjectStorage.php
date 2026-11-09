@@ -13,12 +13,17 @@ final class ShareObjectStorage
     ) {
     }
 
-    public function presignedUrl(string $key, string $ttl = '+10 minutes'): string
+    public function presignedUrl(string $key, string $ttl = '+10 minutes', ?string $downloadName=null): string
     {
-        $cmd = $this->s3->getCommand('GetObject', [
+        $args=[
             'Bucket' => $this->bucket,
             'Key' => $key,
-        ]);
+        ];
+        if ($downloadName!==null) {
+            $args['ResponseContentDisposition']="attachment; filename=\"archivo\"; filename*=UTF-8''".rawurlencode($downloadName);
+            $args['ResponseContentType']='application/octet-stream';
+        }
+        $cmd=$this->s3->getCommand('GetObject',$args);
 
         $request = $this->s3->createPresignedRequest($cmd, $ttl);
         return (string)$request->getUri();

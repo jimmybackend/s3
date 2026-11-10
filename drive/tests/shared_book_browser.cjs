@@ -25,7 +25,7 @@ const path = require('node:path');
     const check = (ok, message) => { if (!ok) throw new Error(message); };
     check(await page.locator('#book-dialog').evaluate(d => d.open), 'Automatic book modal');
     check(await page.locator('.book-page:visible').count() === 2, 'Two pages');
-    await page.waitForFunction(() => document.querySelectorAll('.book-line').length >= 2);
+    await page.waitForFunction(() => [...document.querySelectorAll('.book-ai-status')].filter(e => e.textContent.startsWith('Diseño de hoja')).length === 2);
     check(aiCalls.length === 2 && aiCalls.every(i => i === 0 || i === 1), 'Only visible spread uses AI');
     check(await page.locator('.book-text').first().textContent() === 'Primera página', 'AI preserves original text');
     check(await page.locator('.book-line').first().evaluate(e => getComputedStyle(e).fontWeight) === '700', 'AI styling applied');

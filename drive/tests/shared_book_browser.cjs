@@ -3,7 +3,7 @@ const { execFileSync } = require('node:child_process');
 const path = require('node:path');
 (async () => {
   const root = path.resolve(__dirname, '..');
-  const php = `require '${root}/src/View/TranscriptReader.php'; require '${root}/src/View/ExtractedTextReader.php'; require '${root}/src/View/SharePageRenderer.php'; $d=['documentos'=>[['archivo'=>'IMG_10.jpg','texto'=>'Última página'],['archivo'=>'IMG_2.jpg','texto'=>'Segunda página'],['archivo'=>'IMG_1.jpg','texto'=>'Primera página']]]; echo (new ArcadeCloud\\Drive\\View\\SharePageRenderer())->render('text',['nombre'=>'Libro.json'],json_encode($d),true);`;
+  const php = `require '${root}/src/View/TranscriptReader.php'; require '${root}/src/View/ExtractedTextReader.php'; require '${root}/src/View/SharePageRenderer.php'; $d=['documentos'=>[['archivo'=>'IMG_10.jpg','texto'=>'Última página'],['archivo'=>'IMG_2.jpg','texto'=>'Segunda página'],['archivo'=>'IMG_1.jpg','texto'=>'Primera página']]]; echo (new ArcadeCloud\\Drive\\View\\SharePageRenderer())->render('text',['nombre'=>'Libro.json'],json_encode($d),false,true);`;
   const html = execFileSync('php', ['-r', php], {encoding:'utf8'});
   const browser = await chromium.launch({headless:true});
   try {

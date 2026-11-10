@@ -26,7 +26,7 @@ check(str_contains($html, '00:01–00:23'), 'Rendered timestamps');
 check(str_contains($html, 'Hablante 1') && !str_contains($html, '<script>alert'), 'Speaker and HTML escaping');
 check(!str_starts_with($html, '<!doctype html>\\n'), 'No literal newline');
 check(str_contains($html, 'css/styles.css'), 'Shared application styles');
-check(str_contains($renderer->render('text', $share, $source), 'data-initial-mode="raw"'), 'Normal JSON remains normal text');
+check(str_contains($renderer->render('text', $share, $source), 'data-initial-mode="transcript"'), 'Transcript detected without query parameters');
 foreach (['audio', 'video', 'image', 'file'] as $kind) check(str_contains($renderer->render($kind, $share), 'Abrir original'), 'Existing media viewer');
 $ocr = ['tipo' => 'extraccion_texto_carpeta', 'documentos' => [
  ['archivo' => 'IMG_10.jpg', 'hoja' => 1, 'texto' => 'Diez <script>'],
@@ -35,11 +35,14 @@ $ocr = ['tipo' => 'extraccion_texto_carpeta', 'documentos' => [
 ]];
 $pages = (new \ArcadeCloud\Drive\View\ExtractedTextReader())->pages($ocr);
 check(array_column($pages, 'file') === ['IMG_1.jpg', 'IMG_2.jpg', 'IMG_10.jpg'], 'Natural filename order');
-$html = $renderer->render('text', $share, json_encode($ocr), true);
+$html = $renderer->render('text', $share, json_encode($ocr), false, true);
 check(str_contains($html, 'data-initial-mode="pages"'), 'Automatic book detection');
 check(substr_count($html, 'data-page-index=') === 3, 'All OCR pages retained');
 check(str_contains($html, 'Diez &lt;script&gt;'), 'OCR HTML escaped');
 check(str_contains($html, 'data-json-mode="transcript" disabled'), 'Unsupported transcript mode disabled');
-check(str_contains($renderer->render('text', $share, json_encode($ocr)), 'data-initial-mode="raw"'), 'Manual JSON choice');
+check(str_contains($renderer->render('text', $share, json_encode($ocr)), 'data-initial-mode="pages"'), 'Book detected without query parameters');
 check(str_contains($renderer->render('text', $share, $source, true), 'data-initial-mode="transcript"'), 'Transcript autodetection preserved');
+check(str_contains($renderer->render('text', $share, json_encode($ocr), true), 'data-initial-mode="raw"'), 'Transcripcion never selects book');
+check(str_contains($renderer->render('text', $share, $source, false, true), 'data-initial-mode="raw"'), 'Extraccion never selects transcript');
+check(str_contains($renderer->render('text', $share, '{"texto":"general"}'), 'data-initial-mode="raw"'), 'Unrecognized JSON remains raw');
 echo "Shared transcript reader: OK\n";

@@ -72,7 +72,7 @@ final class PublicShareController
                 : null;
 
             header('Content-Type: text/html; charset=UTF-8');
-            echo $this->renderer->render($kind, $share, $content, $this->request->queryString('Transcripcion') === '1');
+            echo $this->renderer->render($kind, $share, $content, $this->request->queryString('Transcripcion') === '1', $this->request->queryString('Extraccion') === '1');
         } catch (ShareException $e) {
             $this->renderError($e);
         } catch (Throwable $e) {
@@ -170,7 +170,7 @@ final class PublicShareController
                 : null;
 
             header('Content-Type: text/html; charset=UTF-8');
-            echo $this->renderer->render($kind, $share, $content, $this->request->queryString('Transcripcion') === '1');
+            echo $this->renderer->render($kind, $share, $content, $this->request->queryString('Transcripcion') === '1', $this->request->queryString('Extraccion') === '1');
         } catch (ShareException $e) {
             $this->renderError($e);
         } catch (Throwable $e) {

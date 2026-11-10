@@ -45,7 +45,7 @@ final class SharePageRenderer
         return 'file';
     }
 
-    public function render(string $kind, array $share, ?string $content = null, bool $transcription = false): string
+    public function render(string $kind, array $share, ?string $content = null, bool $transcription = false, bool $extraction = false): string
     {
         $key = (string)($share['key'] ?? '');
         $name = (string)($share['nombre'] ?? basename($key));
@@ -73,7 +73,7 @@ final class SharePageRenderer
             : '';
 
         if ($kind === 'text') {
-            $body = $this->textBody((string)$content, $transcription);
+            $body = $this->textBody((string)$content, $transcription, $extraction);
         }
         $assets = 'css/share-reader.css?v=3';
         return '<!doctype html>' . "\n"
@@ -89,27 +89,31 @@ final class SharePageRenderer
             . '<footer class="share-footer"><a class="share-button" href="' . $this->e($url) . '" target="_blank" rel="noopener noreferrer">Abrir original</a><span>ArcadeCloud Drive · Esforzados</span></footer></main></body></html>';
     }
 
-    private function textBody(string $content, bool $transcription): string
+    private function textBody(string $content, bool $transcription, bool $extraction): string
     {
         $data = json_decode($content, true);
         $isJson = json_last_error() === JSON_ERROR_NONE;
         $pages = (new ExtractedTextReader())->pages($data);
         $hasTranscript = is_array($data) && is_array($data['results'] ?? null)
             && (isset($data['results']['transcripts']) || isset($data['results']['audio_segments']) || isset($data['results']['items']));
-        $book = $transcription && count($pages) > 0;
+        // Explicit instructions select only their own schema. Without instructions, inspect JSON.
+        $mode = $extraction ? ($pages ? 'pages' : 'raw')
+            : ($transcription ? ($hasTranscript ? 'transcript' : 'raw')
+                : ($pages ? 'pages' : ($hasTranscript ? 'transcript' : 'raw')));
+        $book = $mode === 'pages';
         $chooser = '';
         if ($isJson) {
             $chooser = '<div class="json-reader-choices" aria-label="Tipo de lectura JSON">'
-                . '<button type="button" data-json-mode="transcript"' . (!$hasTranscript ? ' disabled' : '') . ' aria-pressed="' . ($transcription && !$book && $hasTranscript ? 'true' : 'false') . '">Transcripción por tiempos</button>'
+                . '<button type="button" data-json-mode="transcript"' . (!$hasTranscript ? ' disabled' : '') . ' aria-pressed="' . ($mode === 'transcript' ? 'true' : 'false') . '">Transcripción por tiempos</button>'
                 . '<button type="button" data-json-mode="pages"' . (!$pages ? ' disabled' : '') . ' aria-pressed="' . ($book ? 'true' : 'false') . '">Texto de imágenes · Libro</button>'
-                . '<button type="button" data-json-mode="raw" aria-pressed="' . (!$transcription ? 'true' : 'false') . '">Ver JSON</button></div>'
+                . '<button type="button" data-json-mode="raw" aria-pressed="' . ($mode === 'raw' ? 'true' : 'false') . '">Ver JSON</button></div>'
                 . '<p class="reader-summary">' . ($pages ? 'Texto extraído de imágenes: disponible para lectura por páginas.' : ($hasTranscript ? 'Transcripción detectada: disponible para lectura por tiempos.' : 'Este JSON no contiene páginas ni segmentos de transcripción reconocidos.')) . '</p>';
         }
         // Both structured views are rendered only for recognized schemas.
         $parsed = $hasTranscript ? (new TranscriptReader())->parse($content) : null;
         $text = $parsed !== null ? $parsed['text'] : $content;
         $segments = $parsed['segments'] ?? [];
-        $html = '<section class="reader" data-initial-mode="' . ($transcription ? ($book ? 'pages' : ($hasTranscript ? 'transcript' : 'raw')) : 'raw') . '" aria-label="Lector de texto">' . $chooser . '<div class="reader-toolbar">'
+        $html = '<section class="reader" data-initial-mode="' . $mode . '" aria-label="Lector de texto">' . $chooser . '<div class="reader-toolbar">'
             . '<label class="reader-search">Buscar en el texto<input id="reader-search" type="search" placeholder="Escribe una palabra…" maxlength="200"></label>'
             . '<div class="reader-actions"><button type="button" id="reader-prev" aria-label="Coincidencia anterior">↑</button><button type="button" id="reader-next" aria-label="Coincidencia siguiente">↓</button>'
             . '<span id="reader-matches" role="status" aria-live="polite"></span>'
@@ -123,7 +127,7 @@ final class SharePageRenderer
             $html .= '<p class="reader-summary">' . count($segments) . ' segmentos · Último tiempo: ' . TranscriptReader::timestamp($ends ? max($ends) : null) . '</p>';
         }
         $html .= '<div id="reader-content" class="reader-content">';
-        if ($isJson) $html .= '<div data-reader-panel="raw"' . ($transcription && ($pages || $hasTranscript) ? ' hidden' : '') . '><pre class="reader-text reader-plain">' . $this->e($content) . '</pre></div>';
+        if ($isJson) $html .= '<div data-reader-panel="raw"' . ($mode !== 'raw' ? ' hidden' : '') . '><pre class="reader-text reader-plain">' . $this->e($content) . '</pre></div>';
         if ($pages) {
             $html .= '<div data-reader-panel="pages"' . (!$book ? ' hidden' : '') . '><nav class="book-navigation" aria-label="Navegación del libro"><button type="button" id="book-prev">← Anterior</button><span id="book-position" role="status" aria-live="polite"></span><button type="button" id="book-next">Siguiente →</button><label>Ir a página <input id="book-jump" type="number" min="1" max="' . count($pages) . '" value="1"></label></nav><div class="book-spread">';
             foreach ($pages as $i => $page) {
@@ -131,7 +135,7 @@ final class SharePageRenderer
             }
             $html .= '</div></div>';
         }
-        if ($parsed !== null) $html .= '<div data-reader-panel="transcript"' . (!$transcription || $book ? ' hidden' : '') . '>';
+        if ($parsed !== null) $html .= '<div data-reader-panel="transcript"' . ($mode !== 'transcript' ? ' hidden' : '') . '>';
         $speakers = [];
         foreach ($segments as $i => $segment) {
             $speaker = $segment['speaker'];

@@ -1,5 +1,7 @@
 (() => {
   'use strict';
+  class SharedTextReader {
+  constructor() {
   const content = document.getElementById('reader-content');
   if (!content) return;
   const paragraphs = [...content.querySelectorAll('.reader-text')];
@@ -7,7 +9,7 @@
   const search = document.getElementById('reader-search');
   const matchesLabel = document.getElementById('reader-matches');
   let marks = [], active = -1, size = 17, timer;
-  function move(delta) {
+  const move = (delta) => {
     if (!marks.length) return;
     if (active >= 0) marks[active].classList.remove('active');
     active = (active + delta + marks.length) % marks.length;
@@ -15,7 +17,7 @@
     marks[active].scrollIntoView({block: 'center'});
     matchesLabel.textContent = `${active + 1} de ${marks.length}`;
   }
-  function find() {
+  const find = () => {
     marks = []; active = -1;
     const query = search.value.toLocaleLowerCase('es');
     paragraphs.forEach((p, i) => {
@@ -54,4 +56,7 @@
     catch { document.getElementById('reader-status').textContent = 'No se pudo copiar automáticamente. Selecciona el texto para copiarlo.'; }
   };
   document.getElementById('reader-print').onclick = () => window.print();
+  }
+  }
+  new SharedTextReader();
 })();

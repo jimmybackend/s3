@@ -332,7 +332,7 @@ $h = static fn(string $value): string => htmlspecialchars(
     <img src="ellogo.png" width="50" height="40" class="drive-brand-logo mr-2" alt="ArcadeCloud Drive">
     <span class="home-brand">
       <span class="home-brand-main">ArcadeCloud <strong>Drive</strong></span>
-      <span class="home-brand-sub">Proyecto de jimmybackend</span>
+      <!--<span class="home-brand-sub">Proyecto de jimmybackend</span>-->
     </span>
   </a>
 

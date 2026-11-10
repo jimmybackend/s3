@@ -3389,7 +3389,7 @@
     },
     {
       "path": "drive/src/Http/Controller/PublicShareController.php",
-      "size": 7074,
+      "size": 7182,
       "active": false,
       "references": []
     },
@@ -4299,15 +4299,25 @@
     },
     {
       "path": "drive/src/View/SharePageRenderer.php",
-      "size": 4961,
+      "size": 7682,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/shared_transcript_reader.php"
+      ]
     },
     {
       "path": "drive/src/View/SyncStatusRenderer.php",
       "size": 1126,
       "active": false,
       "references": []
+    },
+    {
+      "path": "drive/src/View/TranscriptReader.php",
+      "size": 3365,
+      "active": false,
+      "references": [
+        "drive/tests/shared_transcript_reader.php"
+      ]
     },
     {
       "path": "drive/src/View/UserIdentityPresenter.php",
@@ -4867,6 +4877,12 @@
     {
       "path": "drive/tests/setup_finalize_contract_smoke.php",
       "size": 4660,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/shared_transcript_reader.php",
+      "size": 2335,
       "active": false,
       "references": []
     },

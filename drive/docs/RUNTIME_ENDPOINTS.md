@@ -496,8 +496,9 @@
 | `drive/src/View/FolderTreeRenderer.php` | ninguna |
 | `drive/src/View/PersonalAwsPageRenderer.php` | ninguna |
 | `drive/src/View/PublicSharedPageRenderer.php` | ninguna |
-| `drive/src/View/SharePageRenderer.php` | ninguna |
+| `drive/src/View/SharePageRenderer.php` | `drive/tests/shared_transcript_reader.php` |
 | `drive/src/View/SyncStatusRenderer.php` | ninguna |
+| `drive/src/View/TranscriptReader.php` | `drive/tests/shared_transcript_reader.php` |
 | `drive/src/View/UserIdentityPresenter.php` | `drive/tests/user_identity_presenter_smoke.php` |
 | `drive/src/View/UserProfileModalRenderer.php` | ninguna |
 | `drive/storage_usage.php` | `drive/js/storage-usage.js` |
@@ -590,6 +591,7 @@
 | `drive/tests/setup_bootstrap_smoke.php` | ninguna |
 | `drive/tests/setup_entry_guard_smoke.php` | ninguna |
 | `drive/tests/setup_finalize_contract_smoke.php` | ninguna |
+| `drive/tests/shared_transcript_reader.php` | ninguna |
 | `drive/tests/smtp_config_smoke.php` | ninguna |
 | `drive/tests/storage_object_name_codec_regression.php` | ninguna |
 | `drive/tests/sync_repository_regression.php` | ninguna |

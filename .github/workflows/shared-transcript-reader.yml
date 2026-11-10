@@ -1,0 +1,23 @@
+name: Shared transcript reader
+on:
+  pull_request:
+    paths: ['drive/src/View/**', 'drive/src/Http/Controller/PublicShareController.php', 'drive/js/share-reader.js', 'drive/css/share-reader.css', 'drive/tests/shared_transcript_reader.php', '.github/workflows/shared-transcript-reader.yml']
+  push:
+    branches: [main]
+    paths: ['drive/src/View/**', 'drive/src/Http/Controller/PublicShareController.php', 'drive/js/share-reader.js', 'drive/css/share-reader.css', 'drive/tests/shared_transcript_reader.php', '.github/workflows/shared-transcript-reader.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+      - run: |
+          php -l drive/src/View/TranscriptReader.php
+          php -l drive/src/View/SharePageRenderer.php
+          php -l drive/src/Http/Controller/PublicShareController.php
+          php drive/tests/shared_transcript_reader.php
+          node --check drive/js/share-reader.js

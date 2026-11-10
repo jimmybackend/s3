@@ -45,7 +45,7 @@ final class SharePageRenderer
         return 'file';
     }
 
-    public function render(string $kind, array $share, ?string $content = null): string
+    public function render(string $kind, array $share, ?string $content = null, bool $transcription = false): string
     {
         $key = (string)($share['key'] ?? '');
         $name = (string)($share['nombre'] ?? basename($key));
@@ -72,18 +72,51 @@ final class SharePageRenderer
             ? '<div class="meta">Expira: ' . $this->e($expiry) . '</div>'
             : '';
 
-        return '<!doctype html>\n'
-            . '<html lang="es"><head><meta charset="utf-8">'
-            . '<meta name="viewport" content="width=device-width,initial-scale=1">'
-            . '<title>' . $this->e($name) . ' · ' . $this->e($titleSuffix) . '</title>'
-            . '<style>:root{color-scheme:dark}body{background:#0b0b0b;color:#fff;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}.wrap{max-width:1100px;margin:0 auto;padding:16px}.box{background:#111;padding:16px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.4);overflow:auto}audio,video{width:100%;height:auto}img{max-width:100%;height:auto;display:block;margin:0 auto;border-radius:8px}pre{white-space:pre-wrap;word-break:break-word;margin:0;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}.meta{opacity:.8;font-size:.9rem;margin-top:8px;word-break:break-all}.btn{display:inline-block;margin-top:10px;padding:8px 12px;border:1px solid #888;border-radius:8px;color:#fff;text-decoration:none}.btn:hover{background:#1b1b1b}</style>'
-            . '</head><body><div class="wrap">'
-            . '<h1 style="font-size:1.1rem;font-weight:600;margin:8px 0 12px">' . $this->e($name) . '</h1>'
-            . '<div class="box">' . $body . '</div>'
-            . '<div class="meta">Ruta: ' . $this->e($key) . '</div>'
-            . $expiryHtml
-            . '<a class="btn" href="' . $this->e($url) . '" target="_blank" rel="noopener">Abrir directo</a>'
-            . '</div></body></html>';
+        if ($kind === 'text') {
+            $body = $this->textBody((string)$content, $transcription);
+        }
+        $assets = 'css/share-reader.css?v=1';
+        return '<!doctype html>' . "\n"
+            . '<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+            . '<title>' . $this->e($name) . ' · ArcadeCloud Drive</title><link rel="icon" href="ellogo.png">'
+            . '<link rel="stylesheet" href="css/styles.css"><link rel="stylesheet" href="' . $assets . '">'
+            . '<script src="js/share-reader.js?v=1" defer></script></head>'
+            . '<body class="ui-theme theme-neon-green theme-dark vision-normal share-page">'
+            . '<header class="share-header"><a href="./" class="share-brand"><img src="ellogo.png" alt="" width="50" height="40">ArcadeCloud <strong>Drive</strong></a><span>Servidor privado de Esforzados</span></header>'
+            . '<main class="share-shell"><div class="share-heading"><span class="share-eyebrow">' . ($transcription && $kind === 'text' ? 'Lector de transcripción' : $this->e($titleSuffix)) . '</span>'
+            . '<h1>' . $this->e($name) . '</h1>' . $expiryHtml . '</div>'
+            . $body
+            . '<footer class="share-footer"><a class="share-button" href="' . $this->e($url) . '" target="_blank" rel="noopener noreferrer">Abrir original</a><span>ArcadeCloud Drive · Esforzados</span></footer></main></body></html>';
+    }
+
+    private function textBody(string $content, bool $transcription): string
+    {
+        $parsed = $transcription ? (new TranscriptReader())->parse($content) : null;
+        $text = $parsed !== null ? $parsed['text'] : $content;
+        $segments = $parsed['segments'] ?? [];
+        $html = '<section class="reader" aria-label="Lector de texto"><div class="reader-toolbar">'
+            . '<label class="reader-search">Buscar en el texto<input id="reader-search" type="search" placeholder="Escribe una palabra…" maxlength="200"></label>'
+            . '<div class="reader-actions"><button type="button" id="reader-prev" aria-label="Coincidencia anterior">↑</button><button type="button" id="reader-next" aria-label="Coincidencia siguiente">↓</button>'
+            . '<span id="reader-matches" role="status" aria-live="polite"></span>'
+            . '<button type="button" id="reader-smaller" aria-label="Reducir letra">A−</button><button type="button" id="reader-larger" aria-label="Aumentar letra">A+</button>'
+            . '<button type="button" id="reader-copy">Copiar texto</button><button type="button" id="reader-print">Imprimir</button>';
+        if ($segments) $html .= '<button type="button" id="reader-mode" aria-pressed="false">Texto continuo</button>';
+        $html .= '</div></div><p id="reader-status" role="status" aria-live="polite"></p>';
+        if ($parsed !== null && $parsed['notice'] !== '') $html .= '<p class="reader-notice">' . $this->e($parsed['notice']) . '</p>';
+        if ($segments) {
+            $ends = array_filter(array_column($segments, 'end'), static fn($v) => $v !== null);
+            $html .= '<p class="reader-summary">' . count($segments) . ' segmentos · Último tiempo: ' . TranscriptReader::timestamp($ends ? max($ends) : null) . '</p>';
+        }
+        $html .= '<div id="reader-content" class="reader-content">';
+        $speakers = [];
+        foreach ($segments as $i => $segment) {
+            $speaker = $segment['speaker'];
+            if ($speaker !== '' && !isset($speakers[$speaker])) $speakers[$speaker] = count($speakers) + 1;
+            $label = $speaker === '' ? 'Hablante sin identificar' : 'Hablante ' . $speakers[$speaker];
+            $html .= '<article class="reader-segment" id="segment-' . ($i + 1) . '"><div class="segment-meta"><a href="#segment-' . ($i + 1) . '">' . TranscriptReader::timestamp($segment['start']) . '–' . TranscriptReader::timestamp($segment['end']) . '</a><span>' . $this->e($label) . '</span></div><p class="reader-text">' . $this->e($segment['text']) . '</p></article>';
+        }
+        if (!$segments) $html .= '<pre class="reader-text reader-plain">' . $this->e($text) . '</pre>';
+        return $html . '</div></section>';
     }
 
     public function error(string $message): string

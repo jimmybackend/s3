@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/../src/View/TranscriptReader.php';
+require __DIR__ . '/../src/View/ExtractedTextReader.php';
 require __DIR__ . '/../src/View/SharePageRenderer.php';
 use ArcadeCloud\Drive\View\TranscriptReader;
 use ArcadeCloud\Drive\View\SharePageRenderer;
@@ -25,6 +26,20 @@ check(str_contains($html, '00:01–00:23'), 'Rendered timestamps');
 check(str_contains($html, 'Hablante 1') && !str_contains($html, '<script>alert'), 'Speaker and HTML escaping');
 check(!str_starts_with($html, '<!doctype html>\\n'), 'No literal newline');
 check(str_contains($html, 'css/styles.css'), 'Shared application styles');
-check(!str_contains($renderer->render('text', $share, $source), 'reader-segment'), 'Normal JSON remains normal text');
+check(str_contains($renderer->render('text', $share, $source), 'data-initial-mode="raw"'), 'Normal JSON remains normal text');
 foreach (['audio', 'video', 'image', 'file'] as $kind) check(str_contains($renderer->render($kind, $share), 'Abrir original'), 'Existing media viewer');
+$ocr = ['tipo' => 'extraccion_texto_carpeta', 'documentos' => [
+ ['archivo' => 'IMG_10.jpg', 'hoja' => 1, 'texto' => 'Diez <script>'],
+ ['archivo' => 'IMG_2.jpg', 'hoja' => 2, 'texto' => 'Dos'],
+ ['archivo' => 'IMG_1.jpg', 'hoja' => 3, 'texto' => 'Uno'],
+]];
+$pages = (new \ArcadeCloud\Drive\View\ExtractedTextReader())->pages($ocr);
+check(array_column($pages, 'file') === ['IMG_1.jpg', 'IMG_2.jpg', 'IMG_10.jpg'], 'Natural filename order');
+$html = $renderer->render('text', $share, json_encode($ocr), true);
+check(str_contains($html, 'data-initial-mode="pages"'), 'Automatic book detection');
+check(substr_count($html, 'data-page-index=') === 3, 'All OCR pages retained');
+check(str_contains($html, 'Diez &lt;script&gt;'), 'OCR HTML escaped');
+check(str_contains($html, 'data-json-mode="transcript" disabled'), 'Unsupported transcript mode disabled');
+check(str_contains($renderer->render('text', $share, json_encode($ocr)), 'data-initial-mode="raw"'), 'Manual JSON choice');
+check(str_contains($renderer->render('text', $share, $source, true), 'data-initial-mode="transcript"'), 'Transcript autodetection preserved');
 echo "Shared transcript reader: OK\n";

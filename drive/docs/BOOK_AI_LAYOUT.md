@@ -22,3 +22,9 @@ Referencia de atribución añadida al catálogo: entrada USD 0.000035/1K tokens 
 ## Tipografía local
 
 El contenedor aplica estas reglas incluso sin respuesta IA: palabras completamente mayúsculas en negrita (también dentro de frases), alineación justificada de cuerpo y justificación de la última línea visual cuando el salto original continúa el párrafo. Las líneas que terminan en punto reciben separación de párrafo; no se insertan caracteres ni se dividen fechas/abreviaturas en mitad de una línea. Se conservan las líneas vacías y todos los caracteres originales. Los encabezados y las últimas líneas de párrafo mantienen espaciado natural para evitar palabras artificialmente estiradas. Estas reglas no requieren regenerar cachés ni invocar Bedrock.
+
+## Párrafos fluidos (v2)
+
+El formato de líneas evoluciona con `paragraph_start` opcional: true inicia un párrafo real, false une la línea con la anterior; null permite la decisión local. Nova interpreta las frases y nombres cortados por OCR, sin devolver texto alternativo. Cada párrafo conserva sus caracteres y saltos en el DOM, pero `white-space: normal` presenta esos saltos como separación entre palabras y permite ajustar las frases al ancho real de la hoja. Se conservan los límites de párrafo, encabezados y listas, con finales de línea naturales; se elimina la justificación forzada de cada renglón OCR. El original y la copia textual siguen intactos.
+
+La versión de prompt/caché pasa a `nova-micro-paragraphs-v2`. Una hoja necesita una nueva inferencia controlada al visitarla por primera vez en esta versión; no se recorre ni regenera el documento completo. Se mantienen todos los límites y la atribución al usuario 1.

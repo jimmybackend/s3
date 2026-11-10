@@ -75,12 +75,12 @@ final class SharePageRenderer
         if ($kind === 'text') {
             $body = $this->textBody((string)$content, $transcription, $extraction);
         }
-        $assets = 'css/share-reader.css?v=6';
+        $assets = 'css/share-reader.css?v=7';
         return '<!doctype html>' . "\n"
             . '<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
             . '<title>' . $this->e($name) . ' · ArcadeCloud Drive</title><link rel="icon" href="ellogo.png">'
             . '<link rel="stylesheet" href="css/styles.css"><link rel="stylesheet" href="' . $assets . '">'
-            . '<script src="js/book-ai-formatter.js?v=2" defer></script><script src="js/share-reader.js?v=5" defer></script></head>'
+            . '<script src="js/book-ai-formatter.js?v=3" defer></script><script src="js/share-reader.js?v=5" defer></script></head>'
             . '<body class="ui-theme theme-neon-green theme-dark vision-normal share-page">'
             . '<header class="share-header"><a href="./" class="share-brand"><img src="ellogo.png" alt="" width="50" height="40">ArcadeCloud <strong>Drive</strong></a><span>Servidor privado de Esforzados</span></header>'
             . '<main class="share-shell"><div class="share-heading"><span class="share-eyebrow">' . ($transcription && $kind === 'text' ? 'Lectura de documento' : $this->e($titleSuffix)) . '</span>'

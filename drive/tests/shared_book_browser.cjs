@@ -28,7 +28,7 @@ const path = require('node:path');
     await page.waitForFunction(() => [...document.querySelectorAll('.book-ai-status')].filter(e => e.textContent.startsWith('Diseño de hoja')).length === 2);
     check(aiCalls.length === 2 && aiCalls.every(i => i === 0 || i === 1), 'Only visible spread uses AI');
     check(await page.locator('.book-text').first().textContent() === 'Primera página', 'AI preserves original text');
-    check(await page.locator('.book-line').first().evaluate(e => getComputedStyle(e).fontWeight) === '700', 'AI styling applied');
+    check(await page.locator('.book-source-line').first().evaluate(e => getComputedStyle(e).fontWeight) === '700', 'AI styling applied');
     const typography = await page.evaluate(() => {
       const host = document.createElement('div');
       const formatter = new BookAiFormatter(document.getElementById('book-dialog'), [], () => {});
@@ -40,14 +40,25 @@ const path = require('node:path');
         original: host.textContent === value,
         bold: [...host.querySelectorAll('strong')].map(e => e.textContent),
         justified: getComputedStyle(host.querySelector('.book-line')).textAlignLast,
-        paragraph: host.querySelectorAll('[data-paragraph-end="true"]').length,
-        blank: host.querySelectorAll('.book-line')[2].textContent === ''
+        paragraph: host.querySelectorAll('.book-paragraph').length,
+        blank: host.textContent.includes('\n\n')
       };
       host.remove(); return result;
     });
     check(typography.original && typography.blank, 'Local typography preserves text and line breaks without AI');
     check(typography.bold.includes('JIMMY') && typography.bold.includes('ÁVILA') && typography.bold.includes('PÁRRAFO'), 'Uppercase words bold locally');
-    check(typography.justified === 'justify' && typography.paragraph === 2, 'Local justification and paragraph spacing');
+    check(typography.justified === 'start' && typography.paragraph === 2, 'Local justification and paragraph spacing');
+    const reflow = await page.evaluate(() => {
+      const host = document.createElement('div');
+      const formatter = new BookAiFormatter(document.getElementById('book-dialog'), [], () => {});
+      const source = 'El acusado dijo llamarse JIMMY\nVIRGILIO VILLATORO ARGUELLO, y se presentó\nante el tribunal.\n\nOtro párrafo completo.';
+      formatter.render(host, source, (target, value) => target.append(document.createTextNode(value)));
+      document.querySelector('.book-text').append(host);
+      const blocks = host.querySelectorAll('.book-paragraph');
+      const result = {same:host.textContent === source,count:blocks.length,name:blocks[0].textContent.includes('JIMMY\nVIRGILIO'),normal:getComputedStyle(blocks[0]).whiteSpace,last:getComputedStyle(blocks[0]).textAlignLast};
+      host.remove(); return result;
+    });
+    check(reflow.same && reflow.count === 2 && reflow.name && reflow.normal === 'normal' && reflow.last === 'start', 'Complete phrases and split names reflow without replacing words');
     const book = await page.locator('#book-dialog').boundingBox();
     check(book.width <= 1280 && book.height <= 900, 'Desktop viewport bounds');
     const type = await page.locator('.book-text').first().evaluate(e => ({font:getComputedStyle(e).fontFamily,size:getComputedStyle(e).fontSize,align:getComputedStyle(e).textAlign,color:getComputedStyle(e).color}));

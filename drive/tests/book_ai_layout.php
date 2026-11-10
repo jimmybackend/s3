@@ -6,7 +6,8 @@ use ArcadeCloud\Drive\Book\BookLayout;
 use ArcadeCloud\Drive\Book\BookLayoutStore;
 function aiCheck(bool $value, string $message): void { if (!$value) throw new RuntimeException($message); }
 $text = "TÍTULO (I)\n\n¿Texto original? Sí; $1.\nFIN.";
-$styles = BookLayout::validate($text, ['lines' => [['id'=>0,'kind'=>'heading','align'=>'center','bold'=>true,'text'=>'INVENTADO'], ['id'=>2,'kind'=>'<script>','align'=>'url(x)'], ['id'=>999,'bold'=>true]]]);
+$styles = BookLayout::validate($text, ['lines' => [['id'=>0,'kind'=>'heading','align'=>'center','bold'=>true,'paragraph_start'=>true,'text'=>'INVENTADO'], ['id'=>2,'kind'=>'<script>','align'=>'url(x)'], ['id'=>999,'bold'=>true]]]);
+aiCheck($styles[0]['paragraph_start'] === true && $styles[1]['paragraph_start'] === null, 'Optional paragraph boundaries only');
 aiCheck(count($styles) === 4 && $styles[0]['bold'], 'All original lines including blanks retained');
 aiCheck($styles[2]['kind'] === 'body' && $styles[2]['align'] === 'justify', 'Only allowlisted styles');
 aiCheck(!str_contains(json_encode($styles), 'INVENTADO'), 'Model cannot replace text');

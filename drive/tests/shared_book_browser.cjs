@@ -41,6 +41,7 @@ const path = require('node:path');
     await page.locator('#book-jump').dispatchEvent('change');
     check((await page.locator('#book-position').textContent()).includes('1–2'), 'Page jump');
     await page.setViewportSize({width:390,height:844});
+    await page.waitForFunction(() => [...document.querySelectorAll('.book-page')].filter(p => !p.hidden).length === 1);
     check(await page.evaluate(() => document.documentElement.scrollWidth <= 390), 'Mobile width');
     check(await page.locator('.book-page:visible').count() === 1, 'Single readable leaf on phone');
     const mobile = await page.locator('#book-dialog').boundingBox();

@@ -52,6 +52,8 @@ final class ActivityCostPageRenderer
         'transcribe.job_started' => 'job iniciado',
         'transcribe.job_completed' => 'job completado',
         'cost_explorer.api_request' => 'consulta API Cost Explorer',
+        'bedrock.nova_micro_input_token' => 'token de entrada Nova Micro',
+        'bedrock.nova_micro_output_token' => 'token de salida Nova Micro',
         'bedrock.nova_pro_input_token' => 'token de entrada Nova Pro',
         'bedrock.nova_pro_output_token' => 'token de salida Nova Pro',
         'drive.no_direct_aws_charge' => 'sin cargo AWS directo medido',

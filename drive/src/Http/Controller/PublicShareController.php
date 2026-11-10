@@ -23,6 +23,10 @@ final class PublicShareController
     public function handle(string $endpointKind): void
     {
         $this->securityHeaders();
+        if ($this->request->method() === 'POST' && $endpointKind === 'texto' && $this->request->postString('action') === 'book_ai_layout') {
+            $this->handleBookLayout();
+            return;
+        }
         if ($this->request->method() === 'POST') {
             $this->handlePrivatePost($endpointKind);
             return;
@@ -77,6 +81,46 @@ final class PublicShareController
             $this->renderError($e);
         } catch (Throwable $e) {
             $this->renderError(new ShareException('No se pudo abrir el enlace compartido.', 500));
+        }
+    }
+
+    private function handleBookLayout(): void
+    {
+        try {
+            $origin = $this->request->serverString('HTTP_ORIGIN');
+            $host = $this->request->serverString('HTTP_HOST');
+            $originHost = (string)parse_url($origin, PHP_URL_HOST);
+            $originPort = parse_url($origin, PHP_URL_PORT);
+            if ($originPort !== null && $originPort !== false) $originHost .= ':' . $originPort;
+            if ($host === '' || $originHost === '' || !hash_equals(strtolower($host), strtolower($originHost))) throw new ShareException('Origen no permitido.', 403);
+            $token = $this->request->queryString('t');
+            if ($token !== '') {
+                $share = $this->app->shareAccessService()->publicToken($token);
+                $content = $this->app->shareAccessService()->readPublicContent($share);
+            } else {
+                $key = $this->request->queryString('archivo', $this->request->queryString('key'));
+                $userId = $this->authenticatedUserId();
+                $content = $this->app->shareAccessService()->privateContent($userId, $key)['contenido'];
+                $token = 'private|' . $userId . '|' . $key;
+            }
+            // Only a server-loaded page is sent to Bedrock; client-supplied text is ignored.
+            $pages = (new \ArcadeCloud\Drive\View\ExtractedTextReader())->pages(json_decode((string)$content, true));
+            $rawPage = $this->request->postString('page');
+            if (!ctype_digit($rawPage)) throw new ShareException('Hoja inválida.', 400);
+            $index = (int)$rawPage;
+            if (!isset($pages[$index])) throw new ShareException('Hoja no disponible.', 404);
+            (new \ArcadeCloud\Drive\Security\UserDirectoryRepository($this->app->db()))->requireById(1);
+            $result = (new \ArcadeCloud\Drive\Book\BookAiLayoutService(
+                \Config::getBedrockRuntime(),
+                \ArcadeCloud\Drive\Activity\ActivityCostRecorder::fromDatabase($this->app->db()),
+                new \ArcadeCloud\Drive\Book\BookLayoutStore()
+            ))->format($pages[$index]['text'], $token, $this->request->serverString('REMOTE_ADDR'), $index + 1);
+            JsonResponse::send($result);
+        } catch (ShareException $e) {
+            JsonResponse::send(['ok' => false, 'message' => $e->getMessage()], $e->httpStatus());
+        } catch (Throwable $e) {
+            // No provider errors, credentials, source text or bearer token in public responses.
+            JsonResponse::send(['ok' => false, 'message' => 'Formato IA no disponible. Se conserva el texto original.'], 503);
         }
     }
 

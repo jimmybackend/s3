@@ -10,6 +10,7 @@
   const panels = [...content.querySelectorAll('[data-reader-panel]')];
   const pages = [...content.querySelectorAll('.book-page')];
   let spread = 0;
+  let aiFormatter = null;
   const pagesPanel = panels.find(panel => panel.dataset.readerPanel === 'pages');
   let dialog = null;
   let turnBusy = false;
@@ -62,6 +63,7 @@
     document.getElementById('book-prev').disabled = spread === 0;
     document.getElementById('book-next').disabled = spread + pageCount() >= pages.length;
     document.getElementById('book-jump').value = spread + 1;
+    if (dialog?.open) aiFormatter?.visible();
   };
   let mode = reader.dataset.initialMode;
   const activeParagraphs = () => paragraphs.filter(p => !panels.length || p.closest('[data-reader-panel]')?.dataset.readerPanel === mode);
@@ -84,16 +86,20 @@
     paragraphs.forEach((p, i) => {
       p.textContent = '';
       const source = originals[i];
-      if (!query || !activeParagraphs().includes(p)) { p.textContent = source; return; }
-      const lower = source.toLocaleLowerCase('es');
-      let cursor = 0, at;
-      while ((at = lower.indexOf(query, cursor)) !== -1) {
-        p.append(document.createTextNode(source.slice(cursor, at)));
-        const mark = document.createElement('mark');
-        mark.textContent = source.slice(at, at + query.length);
-        p.append(mark); marks.push(mark); cursor = at + query.length;
-      }
-      p.append(document.createTextNode(source.slice(cursor)));
+      const appendText = (target, value) => {
+        if (!query || !activeParagraphs().includes(p)) { target.append(document.createTextNode(value)); return; }
+        const lower = value.toLocaleLowerCase('es');
+        let cursor = 0, at;
+        while ((at = lower.indexOf(query, cursor)) !== -1) {
+          target.append(document.createTextNode(value.slice(cursor, at)));
+          const mark = document.createElement('mark');
+          mark.textContent = value.slice(at, at + query.length);
+          target.append(mark); marks.push(mark); cursor = at + query.length;
+        }
+        target.append(document.createTextNode(value.slice(cursor)));
+      };
+      if (aiFormatter && p.classList.contains('book-text')) aiFormatter.render(p, source, appendText);
+      else appendText(p, source);
     });
     matchesLabel.textContent = query ? `${marks.length} coincidencias` : '';
     if (marks.length) move(1);
@@ -108,10 +114,12 @@
       if (value === 'pages' && !dialog.open) dialog.showModal();
       else if (value !== 'pages' && dialog.open) dialog.close();
     }
+    if (value === 'pages') aiFormatter?.visible();
     clearTimeout(timer); find();
   };
   reader.querySelectorAll('[data-json-mode]').forEach(button => button.addEventListener('click', () => setMode(button.dataset.jsonMode)));
   if (pages.length) {
+    if (typeof BookAiFormatter !== 'undefined') aiFormatter = new BookAiFormatter(dialog, pages, find);
     showSpread(0);
     const turn = async (direction) => {
       const target = spread + direction * pageCount();

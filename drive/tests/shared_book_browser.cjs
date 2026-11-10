@@ -8,13 +8,27 @@ const path = require('node:path');
   const browser = await chromium.launch({headless:true});
   try {
     const page = await browser.newPage({viewport:{width:1280,height:900}});
+    const aiCalls = [];
+    await page.route('https://reader.test/**', async route => {
+      if (route.request().method() === 'POST') {
+        const index = new URLSearchParams(route.request().postData()).get('page');
+        aiCalls.push(Number(index));
+        await route.fulfill({contentType:'application/json', body:JSON.stringify({ok:true,styles:[{kind:'body',align:'justify',bold:true,text:'REPLACEMENT MUST NEVER APPEAR'}],cached:false})});
+      } else await route.fulfill({contentType:'text/html',body:'<!doctype html><html></html>'});
+    });
+    await page.goto('https://reader.test/token_texto.php?t=fixture&Extraccion=1');
     await page.setContent(html);
     await page.addStyleTag({path:path.join(root,'css/styles.css')});
     await page.addStyleTag({path:path.join(root,'css/share-reader.css')});
+    await page.addScriptTag({path:path.join(root,'js/book-ai-formatter.js')});
     await page.addScriptTag({path:path.join(root,'js/share-reader.js')});
     const check = (ok, message) => { if (!ok) throw new Error(message); };
     check(await page.locator('#book-dialog').evaluate(d => d.open), 'Automatic book modal');
     check(await page.locator('.book-page:visible').count() === 2, 'Two pages');
+    await page.waitForFunction(() => document.querySelectorAll('.book-line').length >= 2);
+    check(aiCalls.length === 2 && aiCalls.every(i => i === 0 || i === 1), 'Only visible spread uses AI');
+    check(await page.locator('.book-text').first().textContent() === 'Primera página', 'AI preserves original text');
+    check(await page.locator('.book-line').first().evaluate(e => getComputedStyle(e).fontWeight) === '700', 'AI styling applied');
     const book = await page.locator('#book-dialog').boundingBox();
     check(book.width <= 1280 && book.height <= 900, 'Desktop viewport bounds');
     const type = await page.locator('.book-text').first().evaluate(e => ({font:getComputedStyle(e).fontFamily,size:getComputedStyle(e).fontSize,align:getComputedStyle(e).textAlign,color:getComputedStyle(e).color}));
@@ -60,6 +74,7 @@ const path = require('node:path');
     await page.click('[data-json-mode="pages"]');
     await page.click('#book-next');
     check(await page.locator('.book-turn-leaf').count() === 0, 'Reduced motion');
+    check(aiCalls.filter(i => i === 0).length === 1, 'Returning to read page does not reinvoke AI');
     console.log('Book browser interactions: OK');
   } finally { await browser.close(); }
 })().catch(e => {console.error(e);process.exit(1);});

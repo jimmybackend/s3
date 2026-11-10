@@ -1,11 +1,11 @@
 {
   "summary": {
-    "php_total": 624,
-    "php_class_modules": 338,
+    "php_total": 626,
+    "php_class_modules": 339,
     "php_needs_migration": 0,
-    "php_tests": 111,
-    "js_total": 97,
-    "js_class_modules": 88,
+    "php_tests": 112,
+    "js_total": 98,
+    "js_class_modules": 89,
     "js_needs_migration": 1,
     "js_tests": 13,
     "js_compatibility_facades": 8,
@@ -7186,7 +7186,7 @@
     },
     {
       "path": "drive/src/View/SharePageRenderer.php",
-      "lines": 118,
+      "lines": 151,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -7211,6 +7211,21 @@
       "s3": false,
       "bootstrap": false,
       "html": true,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/View/TranscriptReader.php",
+      "lines": 63,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
       "namespace": true,
       "issues": []
     },
@@ -8715,6 +8730,23 @@
       "s3": false,
       "bootstrap": false,
       "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/shared_transcript_reader.php",
+      "lines": 31,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "check"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": true,
       "namespace": false,
       "issues": []
     },
@@ -11010,6 +11042,27 @@
         "jquery": 0,
         "json_consumers": 2,
         "response_checks": 6
+      },
+      "issues": []
+    },
+    {
+      "path": "drive/js/share-reader.js",
+      "lines": 63,
+      "kind": "class/module",
+      "classes": [
+        "SharedTextReader"
+      ],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
       },
       "issues": []
     },

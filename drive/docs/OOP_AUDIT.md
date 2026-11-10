@@ -4,12 +4,12 @@
 
 ## Resumen
 
-- PHP analizados: **624**
-- PHP que ya contienen clases/interfaces: **338**
+- PHP analizados: **626**
+- PHP que ya contienen clases/interfaces: **339**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **111**
-- JavaScript analizados: **97**
-- JavaScript que ya contienen clases: **88**
+- Tests PHP separados del objetivo OOP de runtime: **112**
+- JavaScript analizados: **98**
+- JavaScript que ya contienen clases: **89**
 - JavaScript runtime marcados para migración/revisión: **1**
 - Tests JavaScript separados del objetivo OOP de runtime: **13**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
@@ -503,8 +503,9 @@
 | `drive/src/View/FolderTreeRenderer.php` | 143 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/View/PersonalAwsPageRenderer.php` | 169 | class/module | 1 | — | — | — | — |
 | `drive/src/View/PublicSharedPageRenderer.php` | 104 | class/module | 1 | — | — | — | — |
-| `drive/src/View/SharePageRenderer.php` | 118 | class/module | 1 | — | — | — | — |
+| `drive/src/View/SharePageRenderer.php` | 151 | class/module | 1 | — | — | — | — |
 | `drive/src/View/SyncStatusRenderer.php` | 14 | class/module | 1 | — | — | — | — |
+| `drive/src/View/TranscriptReader.php` | 63 | class/module | 1 | — | — | — | — |
 | `drive/src/View/UserIdentityPresenter.php` | 71 | class/module | 1 | — | — | — | — |
 | `drive/src/View/UserProfileModalRenderer.php` | 127 | class/module | 1 | — | — | — | — |
 | `drive/storage_usage.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -597,6 +598,7 @@
 | `drive/tests/setup_bootstrap_smoke.php` | 61 | test script | 0 | — | — | — | — |
 | `drive/tests/setup_entry_guard_smoke.php` | 38 | test script | 0 | — | — | — | — |
 | `drive/tests/setup_finalize_contract_smoke.php` | 75 | test script | 0 | — | — | — | — |
+| `drive/tests/shared_transcript_reader.php` | 31 | test script | 0 | — | — | — | — |
 | `drive/tests/smtp_config_smoke.php` | 49 | test script | 0 | — | — | — | — |
 | `drive/tests/storage_object_name_codec_regression.php` | 77 | test script | 0 | — | — | — | — |
 | `drive/tests/sync_repository_regression.php` | 91 | test script | 0 | — | ⚠️ | — | — |
@@ -717,6 +719,7 @@
 | `drive/js/recargarPagina.js` | 27 | class/module | RecargarPaginaModule | — | — | — |
 | `drive/js/server-admin.js` | 415 | class/module | ServerAdminModule | — | — | — |
 | `drive/js/setup.js` | 192 | class/module | ArcadeCloudSetup | — | — | — |
+| `drive/js/share-reader.js` | 63 | class/module | SharedTextReader | — | — | — |
 | `drive/js/sincronizar.js` | 265 | class/module | SincronizarModule | — | triggerSyncFolderS3, triggerSyncS3 | window functions: triggerSyncFolderS3, triggerSyncS3 |
 | `drive/js/so-appearance.js` | 168 | class/module | ArcadeCloudOsAppearance | — | — | — |
 | `drive/js/so-clipboard.js` | 927 | class/module | ArcadeCloudOsClipboard | — | — | — |

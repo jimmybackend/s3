@@ -18,3 +18,7 @@ Amazon Bedrock Converse usa `amazon.nova-micro-v1:0`. El prompt está en `src/Bo
 Si no hay permisos/modelo disponible, el límite está alcanzado o la IA falla, el lector conserva la hoja original y lo indica sin filtrar errores de AWS. Las respuestas del modelo no válidas usan estilos seguros con el consumo registrado. No se ha invocado Bedrock en las pruebas: usan respuestas simuladas. El despliegue y la primera llamada real requieren verificación posterior en producción.
 
 Referencia de atribución añadida al catálogo: entrada USD 0.000035/1K tokens y salida USD 0.00014/1K, AWS oficial: https://aws.amazon.com/blogs/machine-learning/cost-efficient-custom-text-to-sql-using-amazon-nova-micro-and-amazon-bedrock-on-demand-inference/ . Son estimaciones; región, descuentos y factura efectiva pueden diferir.
+
+## Tipografía local
+
+El contenedor aplica estas reglas incluso sin respuesta IA: palabras completamente mayúsculas en negrita (también dentro de frases), alineación justificada de cuerpo y justificación de la última línea visual cuando el salto original continúa el párrafo. Las líneas que terminan en punto reciben separación de párrafo; no se insertan caracteres ni se dividen fechas/abreviaturas en mitad de una línea. Se conservan las líneas vacías y todos los caracteres originales. Los encabezados y las últimas líneas de párrafo mantienen espaciado natural para evitar palabras artificialmente estiradas. Estas reglas no requieren regenerar cachés ni invocar Bedrock.

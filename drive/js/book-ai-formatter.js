@@ -41,18 +41,47 @@ class BookAiFormatter {
     } finally { text.classList.remove('book-preparing'); page.removeAttribute('aria-busy'); }
   }
   render(element, source, appendText) {
-    const styles = this.styles.get(element);
-    if (!styles) { appendText(element, source); return; }
+    const styles = this.styles.get(element) || [];
     const lines = source.replace(/\r\n?/g, '\n').split('\n');
     lines.forEach((line, i) => {
       const block = document.createElement('span'); const style = styles[i] || {};
+      const kind = ['heading','subtitle','signature'].includes(style.kind) ? style.kind : 'body';
+      const endsParagraph = /\.[”’"')\]]*\s*$/u.test(line);
+      const allCaps = /\p{Lu}/u.test(line) && !/\p{Ll}/u.test(line);
+      const next = lines[i + 1] || '';
       block.className = 'book-line';
-      block.dataset.kind = ['heading','subtitle','signature'].includes(style.kind) ? style.kind : 'body';
-      block.style.textAlign = ['center','right'].includes(style.align) ? style.align : 'justify';
+      block.dataset.kind = kind;
+      block.dataset.paragraphEnd = String(endsParagraph);
+      // A forced original line break is justified only when prose continues.
+      // The final line of a paragraph, blank lines and headings remain natural.
+      block.dataset.continues = String(kind === 'body' && !allCaps && !endsParagraph && line.trim() !== '' && next.trim() !== '' && (!styles[i + 1]?.kind || styles[i + 1].kind === 'body'));
+      block.style.textAlign = kind === 'body' ? 'justify' : (['center','right'].includes(style.align) ? style.align : 'justify');
       block.style.fontWeight = style.bold === true ? '700' : '400';
       block.style.setProperty('--write-delay', `${Math.min(i * 25, 3000)}ms`);
-      appendText(block, line); element.append(block);
+      appendText(block, line);
+      this.emphasizeCaps(block);
+      element.append(block);
       if (i < lines.length - 1) element.append(document.createTextNode('\n'));
     });
+  }
+  emphasizeCaps(element) {
+    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    for (const node of nodes) {
+      const value = node.nodeValue;
+      const fragment = document.createDocumentFragment();
+      let cursor = 0;
+      for (const match of value.matchAll(/[\p{L}\p{M}\p{N}]+/gu)) {
+        const word = match[0];
+        if (!/\p{Lu}/u.test(word) || /\p{Ll}/u.test(word)) continue;
+        fragment.append(document.createTextNode(value.slice(cursor, match.index)));
+        const strong = document.createElement('strong'); strong.className = 'book-uppercase'; strong.textContent = word;
+        fragment.append(strong); cursor = match.index + word.length;
+      }
+      if (cursor === 0) continue;
+      fragment.append(document.createTextNode(value.slice(cursor)));
+      node.replaceWith(fragment);
+    }
   }
 }

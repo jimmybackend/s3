@@ -10,13 +10,40 @@
   const panels = [...content.querySelectorAll('[data-reader-panel]')];
   const pages = [...content.querySelectorAll('.book-page')];
   let spread = 0;
+  const pagesPanel = panels.find(panel => panel.dataset.readerPanel === 'pages');
+  let dialog = null;
+  let turnBusy = false;
+  const pageCount = () => window.matchMedia('(max-width: 700px)').matches ? 1 : 2;
+  if (pagesPanel) {
+    dialog = document.createElement('dialog');
+    dialog.id = 'book-dialog';
+    dialog.className = 'book-dialog';
+    dialog.setAttribute('aria-label', 'Libro digital');
+    const bar = document.createElement('div');
+    bar.className = 'book-dialog-bar';
+    const title = document.createElement('span');
+    title.textContent = 'ArcadeCloud · Libro digital';
+    const close = document.createElement('button');
+    close.type = 'button'; close.textContent = 'Cerrar ×'; close.id = 'book-close';
+    close.onclick = () => dialog.close();
+    bar.append(title, close);
+    content.append(dialog); dialog.append(bar, pagesPanel);
+    const navigation = pagesPanel.querySelector('.book-navigation');
+    pagesPanel.append(navigation);
+    const label = document.createElement('label');
+    label.textContent = 'Buscar ';
+    const input = document.createElement('input');
+    input.id = 'book-search'; input.type = 'search'; input.placeholder = 'Palabra en el libro';
+    input.addEventListener('input', () => { search.value = input.value; search.dispatchEvent(new Event('input')); });
+    label.append(input); navigation.append(label);
+  }
   const showSpread = (index) => {
-    spread = Math.max(0, Math.min(Math.floor((pages.length - 1) / 2) * 2, Math.floor(index / 2) * 2));
-    pages.forEach((p, i) => { p.hidden = i < spread || i > spread + 1; });
+    spread = Math.max(0, Math.min(Math.floor((pages.length - 1) / pageCount()) * pageCount(), Math.floor(index / pageCount()) * pageCount()));
+    pages.forEach((p, i) => { p.hidden = i < spread || i >= spread + pageCount(); });
     if (!pages.length) return;
-    document.getElementById('book-position').textContent = `Páginas ${spread + 1}–${Math.min(spread + 2, pages.length)} de ${pages.length}`;
+    document.getElementById('book-position').textContent = `Páginas ${spread + 1}–${Math.min(spread + pageCount(), pages.length)} de ${pages.length}`;
     document.getElementById('book-prev').disabled = spread === 0;
-    document.getElementById('book-next').disabled = spread + 2 >= pages.length;
+    document.getElementById('book-next').disabled = spread + pageCount() >= pages.length;
     document.getElementById('book-jump').value = spread + 1;
   };
   let mode = reader.dataset.initialMode;
@@ -30,7 +57,7 @@
     active = (active + delta + marks.length) % marks.length;
     marks[active].classList.add('active');
     const page = marks[active].closest('.book-page');
-    if (page) showSpread(Number(page.dataset.pageIndex));
+    if (page) { showSpread(Number(page.dataset.pageIndex)); if (dialog && !dialog.open) dialog.showModal(); }
     marks[active].scrollIntoView({block: 'center'});
     matchesLabel.textContent = `${active + 1} de ${marks.length}`;
   }
@@ -60,13 +87,51 @@
     reader.querySelectorAll('[data-json-mode]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.jsonMode === value)));
     const continuousButton = document.getElementById('reader-mode');
     if (continuousButton) continuousButton.hidden = value !== 'transcript';
+    if (dialog) {
+      if (value === 'pages' && !dialog.open) dialog.showModal();
+      else if (value !== 'pages' && dialog.open) dialog.close();
+    }
     clearTimeout(timer); find();
   };
   reader.querySelectorAll('[data-json-mode]').forEach(button => button.addEventListener('click', () => setMode(button.dataset.jsonMode)));
   if (pages.length) {
     showSpread(0);
-    document.getElementById('book-prev').onclick = () => showSpread(spread - 2);
-    document.getElementById('book-next').onclick = () => showSpread(spread + 2);
+    const turn = async (direction) => {
+      const target = spread + direction * pageCount();
+      if (turnBusy || target < 0 || target >= pages.length) return;
+      turnBusy = true;
+      const visible = pages.filter(p => !p.hidden);
+      const leaf = direction > 0 ? visible[visible.length - 1] : visible[0];
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!reduced && leaf && leaf.animate) {
+        const overlay = leaf.cloneNode(true);
+        overlay.classList.add('book-turn-leaf');
+        overlay.removeAttribute('data-page-index'); overlay.setAttribute('aria-hidden', 'true');
+        overlay.style.left = `${leaf.offsetLeft}px`; overlay.style.top = `${leaf.offsetTop}px`;
+        overlay.style.width = `${leaf.offsetWidth}px`; overlay.style.height = `${leaf.offsetHeight}px`;
+        overlay.style.transformOrigin = direction > 0 ? 'left center' : 'right center';
+        pagesPanel.querySelector('.book-spread').append(overlay);
+        showSpread(target);
+        try {
+          await overlay.animate([
+            {transform: 'rotateY(0deg)', filter: 'brightness(1)'},
+            {transform: `rotateY(${direction > 0 ? -85 : 85}deg)`, filter: 'brightness(.72)', offset: .55},
+            {transform: `rotateY(${direction > 0 ? -170 : 170}deg)`, filter: 'brightness(.95)'}
+          ], {duration: 620, easing: 'cubic-bezier(.4,0,.2,1)'}).finished;
+        } finally { overlay.remove(); turnBusy = false; }
+      } else { showSpread(target); turnBusy = false; }
+      pages.filter(p => !p.hidden).forEach(p => { p.scrollTop = 0; });
+    };
+    document.getElementById('book-prev').onclick = () => turn(-1);
+    document.getElementById('book-next').onclick = () => turn(1);
+    dialog.addEventListener('close', () => { document.body.classList.remove('book-open'); if (mode === 'pages') setMode('raw'); });
+    const observer = new MutationObserver(() => document.body.classList.toggle('book-open', dialog.open));
+    observer.observe(dialog, {attributes:true, attributeFilter:['open']});
+    dialog.addEventListener('keydown', e => {
+      if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); turn(e.key === 'ArrowRight' ? 1 : -1); }
+    });
+    window.addEventListener('resize', () => showSpread(spread));
     document.getElementById('book-jump').onchange = e => { const value = Number(e.target.value); if (Number.isFinite(value)) showSpread(value - 1); };
   }
   if (panels.length) setMode(mode);

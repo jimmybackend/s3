@@ -16,3 +16,8 @@ body.ui-theme #book-dialog .book-line[data-kind="body"]{text-align:justify!impor
 body.ui-theme #book-dialog .book-line[data-continues="true"]{text-align-last:justify}
 body.ui-theme #book-dialog .book-line[data-paragraph-end="true"]{margin-bottom:.75em}
 body.ui-theme #book-dialog .book-text strong.book-uppercase{font:inherit!important;font-weight:700!important;color:#000!important;-webkit-text-fill-color:#000}
+/* Reflow complete paragraphs instead of stretching every scanned source line. */
+body.ui-theme #book-dialog .book-line.book-paragraph{white-space:normal!important;text-align-last:start!important;line-height:1.5;margin:0 0 .7em;min-height:0;letter-spacing:normal;word-spacing:normal}
+body.ui-theme #book-dialog .book-paragraph .book-source-line{display:inline;white-space:normal;letter-spacing:normal;word-spacing:normal}
+body.ui-theme #book-dialog .book-paragraph[data-kind="body"]{text-align:justify!important}
+body.ui-theme #book-dialog .book-paragraph[data-kind="heading"],body.ui-theme #book-dialog .book-paragraph[data-kind="subtitle"]{margin:.35em 0 .65em}

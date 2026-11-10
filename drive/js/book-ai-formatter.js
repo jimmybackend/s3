@@ -43,27 +43,45 @@ class BookAiFormatter {
   render(element, source, appendText) {
     const styles = this.styles.get(element) || [];
     const lines = source.replace(/\r\n?/g, '\n').split('\n');
+    let paragraph = null;
+    let previous = '';
+    let previousKind = '';
+    const sentenceEnd = value => /[.!?][”’"')\]]*\s*$/u.test(value)
+      && !/\b(?:Lic|Dr|Dra|Sr|Sra|C|Art|Núm|No|Exp|Av)\.\s*$/iu.test(value);
     lines.forEach((line, i) => {
-      const block = document.createElement('span'); const style = styles[i] || {};
-      const kind = ['heading','subtitle','signature'].includes(style.kind) ? style.kind : 'body';
-      const endsParagraph = /\.[”’"')\]]*\s*$/u.test(line);
+      const style = styles[i] || {};
       const allCaps = /\p{Lu}/u.test(line) && !/\p{Ll}/u.test(line);
-      const next = lines[i + 1] || '';
-      block.className = 'book-line';
-      block.dataset.kind = kind;
-      block.dataset.paragraphEnd = String(endsParagraph);
-      // A forced original line break is justified only when prose continues.
-      // The final line of a paragraph, blank lines and headings remain natural.
-      block.dataset.continues = String(kind === 'body' && !allCaps && !endsParagraph && line.trim() !== '' && next.trim() !== '' && (!styles[i + 1]?.kind || styles[i + 1].kind === 'body'));
-      block.style.textAlign = kind === 'body' ? 'justify' : (['center','right'].includes(style.align) ? style.align : 'justify');
-      block.style.fontWeight = style.bold === true ? '700' : '400';
-      block.style.setProperty('--write-delay', `${Math.min(i * 25, 3000)}ms`);
-      appendText(block, line);
-      this.emphasizeCaps(block);
-      element.append(block);
-      if (i < lines.length - 1) element.append(document.createTextNode('\n'));
+      let kind = ['heading','subtitle','signature'].includes(style.kind) ? style.kind : 'body';
+      if (allCaps && paragraph && previousKind === 'body' && !sentenceEnd(previous) && style.paragraph_start !== true) kind = 'body';
+      if (allCaps && (!paragraph || previousKind === 'heading')) kind = 'heading';
+      const section = /^(?:EXPEDIENTE|SENTENCIA|RESULTANDO|CONSIDERANDO|RESUELVE|OFICIO|TOCA)\b|^\d+[.)-]\s/u.test(line.trim());
+      const boundary = !paragraph || style.paragraph_start === true || section || kind !== previousKind
+        || (style.paragraph_start !== false && sentenceEnd(previous));
+      if (line.trim() !== '') {
+        if (boundary) {
+          paragraph = document.createElement('span');
+          paragraph.className = 'book-line book-paragraph';
+          paragraph.dataset.kind = kind;
+          paragraph.style.textAlign = kind === 'body' ? 'justify' : (['center','right'].includes(style.align) ? style.align : 'left');
+          paragraph.style.setProperty('--write-delay', `${Math.min(i * 25, 3000)}ms`);
+          element.append(paragraph);
+        }
+        const fragment = document.createElement('span');
+        fragment.className = 'book-source-line';
+        fragment.style.fontWeight = style.bold === true ? '700' : '400';
+        appendText(fragment, line); this.emphasizeCaps(fragment); paragraph.append(fragment);
+        previous = line; previousKind = kind;
+      } else {
+        // Preserve original whitespace in textContent, without creating oversized empty blocks.
+        appendText(element, line); paragraph = null; previous = ''; previousKind = '';
+      }
+      if (i < lines.length - 1) {
+        const newline = document.createTextNode('\n');
+        if (paragraph) paragraph.append(newline); else element.append(newline);
+      }
     });
   }
+
   emphasizeCaps(element) {
     const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
     const nodes = [];

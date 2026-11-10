@@ -5,7 +5,7 @@ namespace ArcadeCloud\Drive\Book;
 /** AI can label original lines; it can never supply replacement text or HTML. */
 final class BookLayout
 {
-    public const VERSION = 'nova-micro-lines-v1';
+    public const VERSION = 'nova-micro-paragraphs-v2';
     public static function lines(string $text): array
     {
         return explode("\n", str_replace(["\r\n", "\r"], "\n", $text));
@@ -17,7 +17,7 @@ final class BookLayout
         $styles = [];
         foreach ($lines as $index => $line) {
             $upper = preg_match('/\p{Lu}/u', $line) && !preg_match('/\p{Ll}/u', $line);
-            $styles[$index] = ['kind' => 'body', 'align' => 'justify', 'bold' => (bool)$upper];
+            $styles[$index] = ['kind' => 'body', 'align' => 'justify', 'bold' => (bool)$upper, 'paragraph_start' => null];
         }
         if (!is_array($response) || !is_array($response['lines'] ?? null)) return $styles;
         foreach ($response['lines'] as $entry) {
@@ -25,7 +25,7 @@ final class BookLayout
             $id = $entry['id'];
             $kind = in_array($entry['kind'] ?? '', ['body','heading','subtitle','signature'], true) ? $entry['kind'] : 'body';
             $align = in_array($entry['align'] ?? '', ['justify','center','right'], true) ? $entry['align'] : 'justify';
-            $styles[$id] = ['kind' => $kind, 'align' => $align, 'bold' => $styles[$id]['bold'] || ($entry['bold'] ?? false) === true];
+            $styles[$id] = ['kind' => $kind, 'align' => $align, 'bold' => $styles[$id]['bold'] || ($entry['bold'] ?? false) === true, 'paragraph_start' => is_bool($entry['paragraph_start'] ?? null) ? $entry['paragraph_start'] : null];
         }
         return $styles;
     }

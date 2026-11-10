@@ -1,16 +1,16 @@
 {
   "summary": {
-    "php_total": 613,
-    "php_class_modules": 333,
+    "php_total": 624,
+    "php_class_modules": 338,
     "php_needs_migration": 0,
-    "php_tests": 107,
+    "php_tests": 111,
     "js_total": 97,
     "js_class_modules": 88,
     "js_needs_migration": 1,
     "js_tests": 13,
     "js_compatibility_facades": 8,
-    "ajax_clients": 60,
-    "ajax_calls": 127,
+    "ajax_clients": 61,
+    "ajax_calls": 128,
     "json_total": 10,
     "json_invalid": 0
   },
@@ -63,6 +63,36 @@
     {
       "path": "drive/actualizar_ruta.php",
       "lines": 10,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/api/legal-content.php",
+      "lines": 5,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/api/legal.php",
+      "lines": 5,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -1974,7 +2004,7 @@
     },
     {
       "path": "drive/office-launch.php",
-      "lines": 84,
+      "lines": 94,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -5194,6 +5224,25 @@
       "issues": []
     },
     {
+      "path": "drive/src/Http/Controller/LegalDriveController.php",
+      "lines": 74,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [
+        "GET",
+        "POST",
+        "SERVER"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Http/Controller/LoginErrorController.php",
       "lines": 87,
       "kind": "class/module",
@@ -5347,7 +5396,7 @@
     },
     {
       "path": "drive/src/Http/Controller/PublicShareController.php",
-      "lines": 209,
+      "lines": 218,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5585,6 +5634,66 @@
         "SERVER"
       ],
       "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Integration/LegalApiConfig.php",
+      "lines": 81,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Integration/LegalCatalogRepository.php",
+      "lines": 60,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Integration/LegalDriveService.php",
+      "lines": 184,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Integration/LegalFileGrantRepository.php",
+      "lines": 34,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
       "s3": false,
       "bootstrap": false,
       "html": false,
@@ -6312,7 +6421,7 @@
     },
     {
       "path": "drive/src/Sharing/ShareAccessService.php",
-      "lines": 105,
+      "lines": 112,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6342,7 +6451,7 @@
     },
     {
       "path": "drive/src/Sharing/ShareFileRepository.php",
-      "lines": 72,
+      "lines": 86,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6357,7 +6466,7 @@
     },
     {
       "path": "drive/src/Sharing/ShareLinkService.php",
-      "lines": 78,
+      "lines": 80,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6372,7 +6481,7 @@
     },
     {
       "path": "drive/src/Sharing/ShareObjectStorage.php",
-      "lines": 37,
+      "lines": 42,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6387,7 +6496,7 @@
     },
     {
       "path": "drive/src/Sharing/ShareTokenStore.php",
-      "lines": 132,
+      "lines": 151,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -7864,6 +7973,23 @@
       "issues": []
     },
     {
+      "path": "drive/tests/fixtures/legal_api_router.php",
+      "lines": 53,
+      "kind": "test script",
+      "classes": 3,
+      "functions": [],
+      "session": false,
+      "superglobals": [
+        "SERVER"
+      ],
+      "db": false,
+      "s3": true,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/tests/folder_deletion_regression.php",
       "lines": 97,
       "kind": "test script",
@@ -8004,6 +8130,42 @@
       "session": false,
       "superglobals": [],
       "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/legal_api_config_test.php",
+      "lines": 34,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "check",
+        "denied"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/legal_timed_token_store_test.php",
+      "lines": 26,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "checkTimed",
+        "rejectTimed"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
       "s3": false,
       "bootstrap": false,
       "html": false,
@@ -8251,6 +8413,23 @@
       "session": false,
       "superglobals": [],
       "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/office_dedicated_launcher_smoke.php",
+      "lines": 49,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [
+        "GET"
+      ],
+      "db": false,
       "s3": false,
       "bootstrap": false,
       "html": false,
@@ -8854,7 +9033,7 @@
     },
     {
       "path": "drive/tests/web_os_remote_applications_smoke.php",
-      "lines": 49,
+      "lines": 69,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -9831,7 +10010,7 @@
     },
     {
       "path": "drive/js/desktop-shell.js",
-      "lines": 189,
+      "lines": 237,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudDesktopShell"
@@ -9844,11 +10023,11 @@
       "top_vars": [],
       "iife": false,
       "ajax": {
-        "fetch": 0,
+        "fetch": 1,
         "xhr": 0,
         "jquery": 0,
-        "json_consumers": 0,
-        "response_checks": 3
+        "json_consumers": 1,
+        "response_checks": 5
       },
       "issues": []
     },
@@ -11931,7 +12110,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 144940,
+      "bytes": 146802,
       "valid": true,
       "root_type": "object",
       "keys": [

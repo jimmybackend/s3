@@ -4,16 +4,16 @@
 
 ## Resumen
 
-- PHP analizados: **613**
-- PHP que ya contienen clases/interfaces: **333**
+- PHP analizados: **624**
+- PHP que ya contienen clases/interfaces: **338**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **107**
+- Tests PHP separados del objetivo OOP de runtime: **111**
 - JavaScript analizados: **97**
 - JavaScript que ya contienen clases: **88**
 - JavaScript runtime marcados para migración/revisión: **1**
 - Tests JavaScript separados del objetivo OOP de runtime: **13**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
-- Clientes AJAX detectados: **60** módulos / **127** llamadas
+- Clientes AJAX detectados: **61** módulos / **128** llamadas
 - JSON analizados: **10**; inválidos: **0**
 
 ## Criterio
@@ -35,6 +35,8 @@
 | `db.php` | 51 | bootstrap | 0 | — | ⚠️ | — | — |
 | `drive/activity_costs.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/actualizar_ruta.php` | 10 | thin endpoint | 0 | — | — | — | — |
+| `drive/api/legal-content.php` | 5 | thin endpoint | 0 | — | — | — | — |
+| `drive/api/legal.php` | 5 | thin endpoint | 0 | — | — | — | — |
 | `drive/api/native.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/api/upload.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/app_bootstrap.php` | 62 | bootstrap | 0 | — | ⚠️ | — | — |
@@ -159,7 +161,7 @@
 | `drive/notebook-api.php` | 69 | thin endpoint | 0 | — | — | — | — |
 | `drive/notebook.php` | 206 | view/entrypoint | 0 | — | — | — | — |
 | `drive/office-gateway.php` | 746 | view/entrypoint | 0 | — | — | — | — |
-| `drive/office-launch.php` | 84 | thin endpoint | 0 | — | — | — | — |
+| `drive/office-launch.php` | 94 | thin endpoint | 0 | — | — | — | — |
 | `drive/os-preferences.php` | 97 | thin endpoint | 0 | — | — | — | — |
 | `drive/personal_aws_bootstrap.php` | 86 | class/module | 1 | — | — | — | — |
 | `drive/polly_cargar_texto.php` | 8 | thin endpoint | 0 | — | — | — | — |
@@ -372,6 +374,7 @@
 | `drive/src/Http/Controller/FolderQueryController.php` | 30 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/ImageRotationController.php` | 70 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/LegacyUploadController.php` | 154 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/LegalDriveController.php` | 74 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/LoginErrorController.php` | 87 | class/module | 1 | ⚠️ | — | — | — |
 | `drive/src/Http/Controller/MediaPlaylistController.php` | 35 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/MediaProcessingController.php` | 79 | class/module | 1 | — | — | — | — |
@@ -382,7 +385,7 @@
 | `drive/src/Http/Controller/OfficeDocumentController.php` | 53 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Http/Controller/PersonalAwsController.php` | 110 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/PollyTaskController.php` | 347 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Http/Controller/PublicShareController.php` | 209 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/PublicShareController.php` | 218 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/PublicSharedBrowserController.php` | 76 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/PublicUploadController.php` | 81 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/ServerConsoleController.php` | 72 | class/module | 1 | — | — | — | — |
@@ -398,6 +401,10 @@
 | `drive/src/Http/Controller/UserProfileController.php` | 115 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/JsonResponse.php` | 27 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Request.php` | 122 | class/module | 1 | — | — | — | — |
+| `drive/src/Integration/LegalApiConfig.php` | 81 | class/module | 1 | — | — | — | — |
+| `drive/src/Integration/LegalCatalogRepository.php` | 60 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Integration/LegalDriveService.php` | 184 | class/module | 1 | — | — | — | — |
+| `drive/src/Integration/LegalFileGrantRepository.php` | 34 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Mail/SmtpConfig.php` | 120 | class/module | 1 | — | — | — | — |
 | `drive/src/Mail/SmtpEmailService.php` | 346 | class/module | 1 | — | — | — | — |
 | `drive/src/Media/DerivedImageAssetService.php` | 87 | class/module | 1 | — | — | — | — |
@@ -445,12 +452,12 @@
 | `drive/src/Setup/SetupConfigurationService.php` | 182 | class/module | 1 | — | — | — | — |
 | `drive/src/Setup/SetupEntryGuard.php` | 22 | class/module | 1 | — | — | — | — |
 | `drive/src/Setup/SuperAdminBootstrapService.php` | 290 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Sharing/ShareAccessService.php` | 105 | class/module | 1 | — | — | — | — |
+| `drive/src/Sharing/ShareAccessService.php` | 112 | class/module | 1 | — | — | — | — |
 | `drive/src/Sharing/ShareException.php` | 22 | class/module | 1 | — | — | — | — |
-| `drive/src/Sharing/ShareFileRepository.php` | 72 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Sharing/ShareLinkService.php` | 78 | class/module | 1 | — | — | — | — |
-| `drive/src/Sharing/ShareObjectStorage.php` | 37 | class/module | 1 | — | — | — | — |
-| `drive/src/Sharing/ShareTokenStore.php` | 132 | class/module | 1 | — | — | — | — |
+| `drive/src/Sharing/ShareFileRepository.php` | 86 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Sharing/ShareLinkService.php` | 80 | class/module | 1 | — | — | — | — |
+| `drive/src/Sharing/ShareObjectStorage.php` | 42 | class/module | 1 | — | — | — | — |
+| `drive/src/Sharing/ShareTokenStore.php` | 151 | class/module | 1 | — | — | — | — |
 | `drive/src/Storage/FileRecordRepository.php` | 180 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Storage/FolderMutationRepository.php` | 326 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Storage/FolderRepository.php` | 143 | class/module | 1 | — | ⚠️ | — | — |
@@ -544,6 +551,7 @@
 | `drive/tests/federationcloud_smoke.php` | 197 | test script | 0 | — | — | — | — |
 | `drive/tests/file_copy_regression.php` | 96 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/file_mutation_csrf_regression.php` | 97 | test script | 2 | ⚠️ | — | — | — |
+| `drive/tests/fixtures/legal_api_router.php` | 53 | test script | 3 | — | — | ⚠️ | — |
 | `drive/tests/folder_deletion_regression.php` | 97 | test script | 0 | — | ⚠️ | ⚠️ | — |
 | `drive/tests/folder_document_sanitizer.php` | 49 | test script | 0 | — | — | — | — |
 | `drive/tests/folder_textract_background_task_contract.php` | 39 | test script | 0 | — | — | — | — |
@@ -553,6 +561,8 @@
 | `drive/tests/index_federation_drop_smoke.php` | 121 | test script | 0 | — | — | — | — |
 | `drive/tests/installer_service_reconcile_contract_smoke.php` | 197 | test script | 0 | — | — | — | — |
 | `drive/tests/large_folder_regression.php` | 34 | test script | 0 | — | ⚠️ | — | — |
+| `drive/tests/legal_api_config_test.php` | 34 | test script | 0 | — | — | — | — |
+| `drive/tests/legal_timed_token_store_test.php` | 26 | test script | 0 | — | — | — | — |
 | `drive/tests/local_container_capabilities_regression.php` | 56 | test script | 0 | — | — | — | — |
 | `drive/tests/login_lockout_regression.php` | 77 | test script | 0 | — | — | — | — |
 | `drive/tests/media_processing_contract_smoke.php` | 189 | test script | 0 | — | — | — | — |
@@ -568,6 +578,7 @@
 | `drive/tests/node_mysql_monitor_contract_smoke.php` | 27 | test script | 0 | — | — | — | — |
 | `drive/tests/notebook_contract_smoke.php` | 93 | test script | 0 | — | — | — | — |
 | `drive/tests/office_conditional_save_regression.php` | 148 | test script | 1 | — | ⚠️ | — | — |
+| `drive/tests/office_dedicated_launcher_smoke.php` | 49 | test script | 0 | — | — | — | — |
 | `drive/tests/office_gateway_audio_persistence_smoke.php` | 40 | test script | 0 | — | — | — | — |
 | `drive/tests/office_gateway_audio_ui_smoke.php` | 55 | test script | 0 | — | — | — | — |
 | `drive/tests/office_gateway_contract_smoke.php` | 375 | test script | 0 | — | — | — | — |
@@ -606,7 +617,7 @@
 | `drive/tests/web_os_interactions_theme_smoke.php` | 30 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_multiwindow_smoke.php` | 64 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_pending_fixes_smoke.php` | 59 | test script | 0 | — | — | — | — |
-| `drive/tests/web_os_remote_applications_smoke.php` | 49 | test script | 0 | — | — | — | — |
+| `drive/tests/web_os_remote_applications_smoke.php` | 69 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_theme_contract_smoke.php` | 33 | test script | 0 | — | — | — | — |
 | `drive/tests/workstation_pdf_archive_contract_smoke.php` | 24 | test script | 0 | — | — | — | — |
 | `drive/tests/workstation_phase1_contract_smoke.php` | 89 | test script | 0 | — | — | — | — |
@@ -664,7 +675,7 @@
 | `drive/js/dataword3d.js` | 2107 | class/module | ArcadeCloudDrive3D | — | — | — |
 | `drive/js/descarga-multiple.js` | 114 | class/module | DescargaMultipleModule | — | — | — |
 | `drive/js/descarga-uno.js` | 110 | class/module | DescargaUnoModule | — | — | — |
-| `drive/js/desktop-shell.js` | 189 | class/module | ArcadeCloudDesktopShell | — | — | — |
+| `drive/js/desktop-shell.js` | 237 | class/module | ArcadeCloudDesktopShell | — | — | — |
 | `drive/js/drive3d-actions.js` | 191 | class/module | Drive3DActions | — | — | — |
 | `drive/js/drive3d-production.js` | 172 | class/module | Drive3DProduction | — | — | — |
 | `drive/js/drive3d-scene.js` | 1233 | class/module | Drive3DScene | — | — | — |
@@ -763,6 +774,7 @@
 | `drive/js/dataword3d.js` | 5 | 0 | 0 | 3 | 10 |
 | `drive/js/descarga-multiple.js` | 1 | 0 | 0 | 0 | 2 |
 | `drive/js/descarga-uno.js` | 1 | 0 | 0 | 0 | 2 |
+| `drive/js/desktop-shell.js` | 1 | 0 | 0 | 1 | 5 |
 | `drive/js/drive3d-actions.js` | 1 | 0 | 0 | 1 | 2 |
 | `drive/js/drive3d-production.js` | 1 | 0 | 0 | 1 | 3 |
 | `drive/js/elimina-multiple.js` | 2 | 0 | 0 | 1 | 3 |

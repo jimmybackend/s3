@@ -22,7 +22,8 @@
     const bar = document.createElement('div');
     bar.className = 'book-dialog-bar';
     const title = document.createElement('span');
-    title.textContent = 'ArcadeCloud · Libro digital';
+    title.textContent = document.querySelector('.share-heading h1')?.textContent || 'Libro digital';
+    title.title = title.textContent;
     const close = document.createElement('button');
     close.type = 'button'; close.textContent = 'Cerrar ×'; close.id = 'book-close';
     close.onclick = () => dialog.close();
@@ -36,6 +37,22 @@
     input.id = 'book-search'; input.type = 'search'; input.placeholder = 'Palabra en el libro';
     input.addEventListener('input', () => { search.value = input.value; search.dispatchEvent(new Event('input')); });
     label.append(input); navigation.append(label);
+    let bookSize = 11;
+    const fontLabel = document.createElement('output');
+    fontLabel.id = 'book-font-size'; fontLabel.textContent = '11 pt';
+    fontLabel.setAttribute('aria-live', 'polite');
+    for (const [id, caption, delta] of [['book-smaller', 'A−', -1], ['book-larger', 'A+', 1]]) {
+      const button = document.createElement('button');
+      button.id = id; button.type = 'button'; button.textContent = caption;
+      button.setAttribute('aria-label', delta > 0 ? 'Aumentar letra del libro' : 'Reducir letra del libro');
+      button.onclick = () => {
+        bookSize = Math.max(8, Math.min(24, bookSize + delta));
+        dialog.style.setProperty('--book-font-size', `${bookSize}pt`);
+        fontLabel.textContent = `${bookSize} pt`;
+      };
+      navigation.append(button);
+    }
+    navigation.append(fontLabel);
   }
   const showSpread = (index) => {
     spread = Math.max(0, Math.min(Math.floor((pages.length - 1) / pageCount()) * pageCount(), Math.floor(index / pageCount()) * pageCount()));

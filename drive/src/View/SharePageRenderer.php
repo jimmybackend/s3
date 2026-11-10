@@ -75,12 +75,12 @@ final class SharePageRenderer
         if ($kind === 'text') {
             $body = $this->textBody((string)$content, $transcription, $extraction);
         }
-        $assets = 'css/share-reader.css?v=4';
+        $assets = 'css/share-reader.css?v=5';
         return '<!doctype html>' . "\n"
             . '<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
             . '<title>' . $this->e($name) . ' · ArcadeCloud Drive</title><link rel="icon" href="ellogo.png">'
             . '<link rel="stylesheet" href="css/styles.css"><link rel="stylesheet" href="' . $assets . '">'
-            . '<script src="js/share-reader.js?v=4" defer></script></head>'
+            . '<script src="js/book-ai-formatter.js?v=1" defer></script><script src="js/share-reader.js?v=5" defer></script></head>'
             . '<body class="ui-theme theme-neon-green theme-dark vision-normal share-page">'
             . '<header class="share-header"><a href="./" class="share-brand"><img src="ellogo.png" alt="" width="50" height="40">ArcadeCloud <strong>Drive</strong></a><span>Servidor privado de Esforzados</span></header>'
             . '<main class="share-shell"><div class="share-heading"><span class="share-eyebrow">' . ($transcription && $kind === 'text' ? 'Lectura de documento' : $this->e($titleSuffix)) . '</span>'
@@ -131,7 +131,7 @@ final class SharePageRenderer
         if ($pages) {
             $html .= '<div data-reader-panel="pages"' . (!$book ? ' hidden' : '') . '><nav class="book-navigation" aria-label="Navegación del libro"><button type="button" id="book-prev">← Anterior</button><span id="book-position" role="status" aria-live="polite"></span><button type="button" id="book-next">Siguiente →</button><label>Ir a página <input id="book-jump" type="number" min="1" max="' . count($pages) . '" value="1"></label></nav><div class="book-spread">';
             foreach ($pages as $i => $page) {
-                $html .= '<article class="book-page" data-page-index="' . $i . '"' . ($i > 1 ? ' hidden' : '') . '><header><strong>Página ' . ($i + 1) . '</strong><span>Hoja original ' . $this->e($page['sheet']) . '</span><small>' . $this->e($page['file']) . '</small></header><div class="reader-text book-text">' . $this->e((string)preg_replace('/(?<!\n)\n(?!\n)/u', ' ', str_replace(["\r\n", "\r"], "\n", $page['text']))) . '</div></article>';
+                $html .= '<article class="book-page" data-page-index="' . $i . '"' . ($i > 1 ? ' hidden' : '') . '><header><strong>Página ' . ($i + 1) . '</strong><span>Hoja original ' . $this->e($page['sheet']) . '</span><small>' . $this->e($page['file']) . '</small></header><div class="reader-text book-text">' . $this->e($page['text']) . '</div></article>';
             }
             $html .= '</div></div>';
         }

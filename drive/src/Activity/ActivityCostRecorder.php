@@ -40,9 +40,10 @@ final class ActivityCostRecorder
         ?float $startedAt = null,
         array $metadata = [],
         ?string $correlationId = null,
-        ?int $actorUserId = null
+        ?int $actorUserId = null,
+        bool $required = false
     ): void {
-        $this->record('ok', $userId, $action, $service, $fileId, $units, $startedAt, $metadata, $correlationId, $actorUserId);
+        $this->record('ok', $userId, $action, $service, $fileId, $units, $startedAt, $metadata, $correlationId, $actorUserId, $required);
     }
 
     public function failure(
@@ -67,7 +68,8 @@ final class ActivityCostRecorder
         ?float $startedAt,
         array $metadata,
         ?string $correlationId,
-        ?int $actorUserId
+        ?int $actorUserId,
+        bool $required = false
     ): void {
         if ($userId <= 0) return;
 
@@ -95,7 +97,8 @@ final class ActivityCostRecorder
                 'metadata_json' => $this->safeMetadataJson($metadata),
                 'created_at' => gmdate('Y-m-d H:i:s'),
             ]);
-        } catch (\Throwable) {
+        } catch (\Throwable $error) {
+            if ($required) throw $error;
             // Best effort: una falla de telemetría nunca debe romper la operación principal.
         }
     }

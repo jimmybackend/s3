@@ -33,6 +33,7 @@ const path = require('node:path');
     await page.waitForFunction(() => document.querySelector('mark.active'));
     check(await page.locator('.book-page:visible mark').count() === 1, 'Search navigates to hidden page');
     await page.click('#book-close');
+    await page.locator('[data-reader-panel="raw"]').waitFor({state:'visible'});
     check(await page.locator('[data-reader-panel="raw"]').isVisible(), 'Raw JSON choice');
     await page.click('[data-json-mode="pages"]');
     await page.fill('#book-search','');

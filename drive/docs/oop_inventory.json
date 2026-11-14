@@ -1,16 +1,16 @@
 {
   "summary": {
-    "php_total": 626,
-    "php_class_modules": 339,
+    "php_total": 634,
+    "php_class_modules": 345,
     "php_needs_migration": 0,
-    "php_tests": 112,
-    "js_total": 98,
-    "js_class_modules": 89,
+    "php_tests": 113,
+    "js_total": 99,
+    "js_class_modules": 90,
     "js_needs_migration": 1,
     "js_tests": 13,
     "js_compatibility_facades": 8,
-    "ajax_clients": 61,
-    "ajax_calls": 128,
+    "ajax_clients": 62,
+    "ajax_calls": 130,
     "json_total": 10,
     "json_invalid": 0
   },
@@ -1659,6 +1659,21 @@
       "issues": []
     },
     {
+      "path": "drive/generate_folder_detail.php",
+      "lines": 10,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/guardar_texto.php",
       "lines": 8,
       "kind": "thin endpoint",
@@ -2376,7 +2391,7 @@
     },
     {
       "path": "drive/src/Activity/ActivityCostRecorder.php",
-      "lines": 155,
+      "lines": 158,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2865,6 +2880,21 @@
     {
       "path": "drive/src/Application/FileSearchService.php",
       "lines": 159,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Application/FolderDetailCatalogService.php",
+      "lines": 258,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3379,6 +3409,51 @@
     {
       "path": "drive/src/Aws/TranslateFileService.php",
       "lines": 60,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Book/BookAiLayoutService.php",
+      "lines": 49,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Book/BookLayout.php",
+      "lines": 33,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Book/BookLayoutStore.php",
+      "lines": 56,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5149,6 +5224,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/Http/Controller/FolderDetailCatalogController.php",
+      "lines": 34,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Http/Controller/FolderDocumentController.php",
       "lines": 73,
       "kind": "class/module",
@@ -5396,7 +5486,7 @@
     },
     {
       "path": "drive/src/Http/Controller/PublicShareController.php",
-      "lines": 218,
+      "lines": 262,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6976,7 +7066,7 @@
     },
     {
       "path": "drive/src/View/ActivityCostPageRenderer.php",
-      "lines": 560,
+      "lines": 562,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -7007,6 +7097,21 @@
     {
       "path": "drive/src/View/Ec2PanelHelper.php",
       "lines": 69,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/View/ExtractedTextReader.php",
+      "lines": 23,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -7186,7 +7291,7 @@
     },
     {
       "path": "drive/src/View/SharePageRenderer.php",
-      "lines": 151,
+      "lines": 180,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -7433,6 +7538,23 @@
       "s3": false,
       "bootstrap": false,
       "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/book_ai_layout.php",
+      "lines": 39,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "aiCheck"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": true,
       "namespace": false,
       "issues": []
     },
@@ -8735,7 +8857,7 @@
     },
     {
       "path": "drive/tests/shared_transcript_reader.php",
-      "lines": 31,
+      "lines": 49,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -9917,6 +10039,27 @@
       "issues": []
     },
     {
+      "path": "drive/js/book-ai-formatter.js",
+      "lines": 106,
+      "kind": "class/module",
+      "classes": [
+        "BookAiFormatter"
+      ],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "ajax": {
+        "fetch": 1,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 1,
+        "response_checks": 2
+      },
+      "issues": []
+    },
+    {
       "path": "drive/js/carpetas.js",
       "lines": 1208,
       "kind": "class/module",
@@ -11047,7 +11190,7 @@
     },
     {
       "path": "drive/js/share-reader.js",
-      "lines": 63,
+      "lines": 188,
       "kind": "class/module",
       "classes": [
         "SharedTextReader"
@@ -11210,7 +11353,7 @@
     },
     {
       "path": "drive/js/so-folders.js",
-      "lines": 607,
+      "lines": 705,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsFolderActions"
@@ -11223,11 +11366,11 @@
       "top_vars": [],
       "iife": false,
       "ajax": {
-        "fetch": 1,
+        "fetch": 2,
         "xhr": 0,
         "jquery": 0,
-        "json_consumers": 1,
-        "response_checks": 3
+        "json_consumers": 2,
+        "response_checks": 5
       },
       "issues": []
     },
@@ -12136,7 +12279,7 @@
     },
     {
       "path": "drive/config/activity-cost-pricing.json",
-      "bytes": 1663,
+      "bytes": 2075,
       "valid": true,
       "root_type": "object",
       "keys": [
@@ -12163,7 +12306,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 149136,
+      "bytes": 149521,
       "valid": true,
       "root_type": "object",
       "keys": [

@@ -63,7 +63,7 @@ final class FolderDetailCatalogService
                 'nombre' => $name,
                 'tipo' => $extension !== '' ? $extension : 'sin extensión',
                 'extension' => $extension,
-                'tamano_bytes' => max(0, (int)($row['Tamano'] ?? 0)),
+                'tamano' => self::humanSize(max(0, (int)($row['Tamano'] ?? 0))),
             ];
         }
         $stmt->close();
@@ -162,6 +162,23 @@ final class FolderDetailCatalogService
             'total_archivos' => count($files),
             'tamano' => $size,
         ];
+    }
+
+    /** Muestra unidades binarias fáciles de leer, sin decimales innecesarios. */
+    private static function humanSize(int $bytes): string
+    {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        $value = (float)$bytes;
+        $index = 0;
+        while ($value >= 1024 && $index < count($units) - 1) {
+            $value /= 1024;
+            $index++;
+        }
+        $formatted = number_format($value, $index === 0 ? 0 : 2, '.', '');
+        if ($index !== 0) {
+            $formatted = rtrim(rtrim($formatted, '0'), '.');
+        }
+        return $formatted . ' ' . $units[$index];
     }
 
     private function visiblePath(int $userId, string $route): string

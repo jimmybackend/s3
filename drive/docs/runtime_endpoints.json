@@ -207,6 +207,7 @@
         "drive/federationdrop/index.php",
         "drive/folder-suggestions.php",
         "drive/generar_token.php",
+        "drive/generate_folder_detail.php",
         "drive/guardar_texto.php",
         "drive/image-rotate.php",
         "drive/leer_texto.php",
@@ -1288,6 +1289,14 @@
       ]
     },
     {
+      "path": "drive/generate_folder_detail.php",
+      "size": 270,
+      "active": false,
+      "references": [
+        "drive/js/so-folders.js"
+      ]
+    },
+    {
       "path": "drive/guardar_texto.php",
       "size": 255,
       "active": true,
@@ -1816,7 +1825,7 @@
     },
     {
       "path": "drive/src/Activity/ActivityCostRecorder.php",
-      "size": 5467,
+      "size": 5590,
       "active": false,
       "references": []
     },
@@ -2081,6 +2090,12 @@
       ]
     },
     {
+      "path": "drive/src/Application/FolderDetailCatalogService.php",
+      "size": 11640,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/src/Application/FolderDocumentService.php",
       "size": 12215,
       "active": false,
@@ -2314,6 +2329,28 @@
       "size": 2890,
       "active": false,
       "references": []
+    },
+    {
+      "path": "drive/src/Book/BookAiLayoutService.php",
+      "size": 4551,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Book/BookLayout.php",
+      "size": 1580,
+      "active": false,
+      "references": [
+        "drive/tests/book_ai_layout.php"
+      ]
+    },
+    {
+      "path": "drive/src/Book/BookLayoutStore.php",
+      "size": 3199,
+      "active": false,
+      "references": [
+        "drive/tests/book_ai_layout.php"
+      ]
     },
     {
       "path": "drive/src/Console/ActivityRetentionCommand.php",
@@ -3273,6 +3310,12 @@
       "references": []
     },
     {
+      "path": "drive/src/Http/Controller/FolderDetailCatalogController.php",
+      "size": 958,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/src/Http/Controller/FolderDocumentController.php",
       "size": 2431,
       "active": false,
@@ -3389,7 +3432,7 @@
     },
     {
       "path": "drive/src/Http/Controller/PublicShareController.php",
-      "size": 7182,
+      "size": 10131,
       "active": false,
       "references": []
     },
@@ -4190,7 +4233,7 @@
     },
     {
       "path": "drive/src/View/ActivityCostPageRenderer.php",
-      "size": 31386,
+      "size": 31536,
       "active": false,
       "references": []
     },
@@ -4208,6 +4251,14 @@
       "active": false,
       "references": [
         "drive/tests/system_panel_fixture.php"
+      ]
+    },
+    {
+      "path": "drive/src/View/ExtractedTextReader.php",
+      "size": 940,
+      "active": false,
+      "references": [
+        "drive/tests/shared_transcript_reader.php"
       ]
     },
     {
@@ -4299,7 +4350,7 @@
     },
     {
       "path": "drive/src/View/SharePageRenderer.php",
-      "size": 7682,
+      "size": 11006,
       "active": false,
       "references": [
         "drive/tests/shared_transcript_reader.php"
@@ -4403,6 +4454,12 @@
     {
       "path": "drive/tests/aws_cost_attribution_safety_smoke.php",
       "size": 1317,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/book_ai_layout.php",
+      "size": 2718,
       "active": false,
       "references": []
     },
@@ -4882,7 +4939,7 @@
     },
     {
       "path": "drive/tests/shared_transcript_reader.php",
-      "size": 2335,
+      "size": 3998,
       "active": false,
       "references": []
     },

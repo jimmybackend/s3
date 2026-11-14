@@ -61,7 +61,7 @@ final class FolderDetailCatalogService
             $extension = strtolower((string)pathinfo($name, PATHINFO_EXTENSION));
             $files[] = [
                 'nombre' => $name,
-                'tipo' => $extension !== '' ? $extension : 'sin extensión',
+                'tipo' => self::fileType($extension),
                 'extension' => $extension,
                 'tamano' => self::humanSize(max(0, (int)($row['Tamano'] ?? 0))),
             ];
@@ -162,6 +162,42 @@ final class FolderDetailCatalogService
             'total_archivos' => count($files),
             'tamano' => $size,
         ];
+    }
+
+    /**
+     * Clasificación funcional legible, independiente de la extensión.
+     * Formatos desconocidos permanecen como «Otro archivo», sin inventar tipo.
+     */
+    private static function fileType(string $extension): string
+    {
+        if ($extension === '') {
+            return 'Archivo sin extensión';
+        }
+
+        $categories = [
+            'Video' => ['mp4', 'm4v', 'mov', 'avi', 'mkv', 'webm', 'wmv', 'flv', 'mpeg', 'mpg', '3gp', '3g2', 'ts', 'mts', 'm2ts', 'vob', 'ogv', 'divx', 'asf', 'rm', 'rmvb'],
+            'Audio' => ['mp3', 'wav', 'wave', 'flac', 'aac', 'm4a', 'wma', 'ogg', 'oga', 'opus', 'aiff', 'aif', 'mid', 'midi', 'amr', 'ape', 'alac', 'mka', 'ac3', 'dts'],
+            'Imagen' => ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'heic', 'heif', 'bmp', 'tif', 'tiff', 'svg', 'ico', 'jfif', 'apng', 'psd', 'ai', 'eps', 'raw', 'cr2', 'nef', 'arw', 'dng', 'xcf'],
+            'Documento PDF' => ['pdf'],
+            'Documento de texto' => ['txt', 'rtf', 'odt', 'doc', 'docx', 'pages', 'md', 'markdown', 'tex', 'log'],
+            'Hoja de cálculo' => ['xls', 'xlsx', 'xlsm', 'xlsb', 'ods', 'numbers', 'csv', 'tsv'],
+            'Presentación' => ['ppt', 'pptx', 'pptm', 'odp', 'key'],
+            'Libro electrónico' => ['epub', 'mobi', 'azw', 'azw3', 'fb2', 'djvu'],
+            'Archivo comprimido' => ['zip', 'rar', '7z', 'tar', 'gz', 'tgz', 'bz2', 'xz', 'zst', 'cab', 'iso', 'img', 'jar'],
+            'Datos estructurados' => ['json', 'jsonl', 'xml', 'yaml', 'yml', 'toml', 'ini', 'sql', 'sqlite', 'db', 'parquet', 'ndjson'],
+            'Código fuente' => ['php', 'js', 'jsx', 'ts', 'tsx', 'html', 'htm', 'css', 'scss', 'sass', 'py', 'java', 'kt', 'kts', 'c', 'h', 'cpp', 'hpp', 'cs', 'go', 'rs', 'rb', 'sh', 'bash', 'ps1', 'swift', 'dart', 'vue', 'svelte', 'ipynb'],
+            'Aplicación o ejecutable' => ['exe', 'msi', 'apk', 'aab', 'app', 'deb', 'rpm', 'dmg', 'pkg', 'appimage', 'bat', 'cmd', 'com', 'dll', 'so', 'bin'],
+            'Fuente tipográfica' => ['ttf', 'otf', 'woff', 'woff2', 'eot'],
+            'Modelo 3D' => ['obj', 'stl', 'fbx', 'gltf', 'glb', 'blend', '3ds', 'dae', 'step', 'stp', 'iges', 'igs'],
+            'Subtítulos' => ['srt', 'vtt', 'ass', 'ssa', 'sub'],
+            'Certificado o clave' => ['pem', 'crt', 'cer', 'p12', 'pfx', 'pub', 'asc', 'gpg', 'pgp'],
+        ];
+        foreach ($categories as $type => $extensions) {
+            if (in_array($extension, $extensions, true)) {
+                return $type;
+            }
+        }
+        return 'Otro archivo';
     }
 
     /** Muestra unidades binarias fáciles de leer, sin decimales innecesarios. */

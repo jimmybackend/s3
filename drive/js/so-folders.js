@@ -13,6 +13,7 @@ class ArcadeCloudOsFolderActions {
 
   init() {
     this.ensureTextractAction();
+    this.ensureDetailsDialog();
     this.bindFolderEntries();
     this.bindCurrentFolderToolbar();
     this.bindBlankAreaContext();
@@ -32,6 +33,92 @@ class ArcadeCloudOsFolderActions {
     const sync = this.context.querySelector('[data-folder-action="sync"]');
     if (sync) sync.after(button);
     else this.context.appendChild(button);
+  }
+
+  ensureDetailsDialog() {
+    if (!this.context || this.context.querySelector('[data-folder-action="details"]')) return;
+    const action = this.document.createElement('button');
+    action.type = 'button';
+    action.dataset.folderAction = 'details';
+    action.innerHTML = '<i class="fas fa-circle-info"></i>Detalles de la carpeta';
+    this.context.querySelector('[data-folder-action="open-new"]')?.after(action);
+
+    if (this.document.getElementById('osFolderDetailsDialog')) return;
+    const dialog = this.document.createElement('dialog');
+    dialog.id = 'osFolderDetailsDialog';
+    dialog.setAttribute('aria-label', 'Detalles de la carpeta');
+    dialog.style.cssText = 'max-width:min(520px,calc(100vw - 24px));width:100%;border:1px solid #718096;border-radius:12px;padding:20px;color:#182333;background:#fff;box-shadow:0 14px 50px #0005;overflow-wrap:anywhere';
+    const heading = this.document.createElement('h3');
+    heading.textContent = 'Detalles de la carpeta';
+    heading.style.margin = '0 0 12px';
+    const path = this.document.createElement('p');
+    path.dataset.folderDetailsPath = '1';
+    const message = this.document.createElement('p');
+    message.dataset.folderDetailsMessage = '1';
+    message.setAttribute('role', 'status');
+    const buttons = this.document.createElement('div');
+    buttons.style.cssText = 'display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end';
+    const generate = this.document.createElement('button');
+    generate.type = 'button';
+    generate.textContent = 'Crear o actualizar detalle.json';
+    generate.style.cssText = 'padding:10px;border:0;border-radius:8px;background:#155e75;color:white;cursor:pointer';
+    const close = this.document.createElement('button');
+    close.type = 'button';
+    close.textContent = 'Cerrar';
+    close.style.cssText = 'padding:10px;border:1px solid #aaa;border-radius:8px;background:#eee;color:#111;cursor:pointer';
+    close.addEventListener('click', () => dialog.close());
+    generate.addEventListener('click', () => this.generateDetails(dialog, generate));
+    buttons.append(generate, close);
+    dialog.append(heading, path, message, buttons);
+    this.document.body.append(dialog);
+  }
+
+  showDetails(folder) {
+    const dialog = this.document.getElementById('osFolderDetailsDialog');
+    if (!dialog) return;
+    this.detailsFolder = folder;
+    dialog.querySelector('[data-folder-details-path]').textContent = 'Carpeta: ' + folder.name;
+    dialog.querySelector('[data-folder-details-message]').textContent =
+      'Genera una lista JSON de los archivos de esta carpeta, sin subcarpetas ni claves internas.';
+    if (!dialog.open) dialog.showModal();
+  }
+
+  async generateDetails(dialog, button) {
+    if (!this.detailsFolder) return;
+    const folder = this.detailsFolder;
+    const message = dialog.querySelector('[data-folder-details-message]');
+    button.disabled = true;
+    message.textContent = 'Consultando archivos y guardando detalle.json…';
+    try {
+      const body = new URLSearchParams({ route: folder.route });
+      const response = await fetch('generate_folder_detail.php', {
+        method: 'POST', credentials: 'same-origin', cache: 'no-store',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-Drive-CSRF': String(this.window.DRIVE_UPLOAD_CSRF || '')
+        },
+        body: body.toString()
+      });
+      const json = await response.json();
+      if (!response.ok || json?.ok !== true) {
+        throw new Error(json?.error || json?.mensaje || 'No fue posible generar el archivo.');
+      }
+      message.textContent = 'detalle.json ' + json.data.accion +
+        ' correctamente. Ruta: ' + json.data.ruta_visible +
+        ' · Archivos: ' + json.data.total_archivos + '.';
+      this.document.dispatchEvent(new CustomEvent('drive:folder-document-created', {
+        detail: { route: folder.route, name: 'detalle.json', data: json.data }
+      }));
+      this.document.dispatchEvent(new Event('drive:storage-changed'));
+      if (this.sameRoute(folder.route, this.current.route)) {
+        this.navigate(folder.route);
+      }
+    } catch (error) {
+      message.textContent = error?.message || 'Error al generar el catálogo.';
+    } finally {
+      button.disabled = false;
+    }
   }
 
   rebind(root = this.document) {
@@ -112,7 +199,12 @@ class ArcadeCloudOsFolderActions {
       entry.addEventListener('click', (event) => {
         if (event.target.closest('.os-folder-entry-menu')) return;
         event.preventDefault();
-        this.navigate(this.folderFromEntry(entry).route, false);
+        if (this.window.matchMedia('(pointer: coarse)').matches) {
+          const rect = entry.getBoundingClientRect();
+          this.showContext(this.folderFromEntry(entry), rect.left + 15, rect.top + 24, false);
+        } else {
+          this.navigate(this.folderFromEntry(entry).route, false);
+        }
       });
 
       entry.addEventListener('contextmenu', (event) => {
@@ -282,6 +374,7 @@ class ArcadeCloudOsFolderActions {
     const action = id => menu.querySelector('[data-folder-action="' + id + '"]');
     const clipboard = (id) => menu.querySelector('[data-os-clipboard-action="' + id + '"][data-os-clipboard-kind="folder"]');
     const labels = {
+      details:['Detalles de la carpeta','Consulta la carpeta y crea o actualiza detalle.json.'],
       'create-document':['Crear archivo desde texto pegado','Crea un archivo nuevo con el texto que escribas o pegues.'],
       'create-folder':['Nueva carpeta','Crea una subcarpeta en esta ubicación.'],
       'record-audio':['Grabar nota de voz','Graba una nota y guárdala directamente en esta carpeta.'],
@@ -319,8 +412,8 @@ class ArcadeCloudOsFolderActions {
     if (copyFolder?.querySelector('span')) copyFolder.querySelector('span').textContent = 'Copiar carpeta';
     if (copyFolder) copyFolder.title = 'Prepara una copia de esta carpeta para pegarla en otro lugar.';
     const list = isCurrent
-      ? [action('open-new'),action('create-empty-file'),action('create-document'),action('create-folder'),action('record-audio'),action('record-video'),action('record-photo'),clipboard('paste'),action('extract-text'),action('sync')]
-      : [action('open'),action('open-new'),action('create-empty-file'),action('create-document'),action('create-folder'),action('record-audio'),action('record-video'),action('record-photo'),action('move'),clipboard('copy'),action('rename'),action('delete'),copyFolder,clipboard('cut'),clipboard('paste'),action('extract-text'),action('sync')];
+      ? [action('details'),action('open-new'),action('create-empty-file'),action('create-document'),action('create-folder'),action('record-audio'),action('record-video'),action('record-photo'),clipboard('paste'),action('extract-text'),action('sync')]
+      : [action('open'),action('details'),action('open-new'),action('create-empty-file'),action('create-document'),action('create-folder'),action('record-audio'),action('record-video'),action('record-photo'),action('move'),clipboard('copy'),action('rename'),action('delete'),copyFolder,clipboard('cut'),clipboard('paste'),action('extract-text'),action('sync')];
     // "Copiar" and "Copiar carpeta" use the same established clipboard action.
     // Never duplicate a DOM control or issue an unexpected second copy action.
     const seen = new Set();
@@ -369,6 +462,11 @@ class ArcadeCloudOsFolderActions {
 
     if (['move', 'rename', 'delete'].includes(action) && folder.isRoot) {
       this.notify('La carpeta raíz del usuario no permite esta acción.', 'warning');
+      return;
+    }
+
+    if (action === 'details') {
+      this.showDetails(folder);
       return;
     }
 

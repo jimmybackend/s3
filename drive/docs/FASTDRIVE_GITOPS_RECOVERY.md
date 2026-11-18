@@ -47,7 +47,7 @@ en esa tabla y podía dejar FastDrive encendida indefinidamente.
 Ahora, en la EC2 grande exclusivamente, el worker verifica su
 identidad física con IMDSv2. Si está encendida pero no tiene sesión,
 reconcilia una sesión con usuario de sistema `0` y activa el contador
-de **20 minutos + 30 segundos de advertencia**. Un gateway remoto no puede
+de **30 minutos + 30 segundos de advertencia**. Un gateway remoto no puede
 fabricar esa sesión. Si la sesión antigua está en `stopping`, exige
 una fecha de arranque AWS posterior a la orden de apagado para descartarla.
 
@@ -60,7 +60,7 @@ multimedia, y el candado compartido `ComputeNodeAdmissionLock`.
 escritorio con un cliente persistente `docker run --name
 arcadecloud-workstation`. Ese cliente **no cuenta como trabajo de fondo**:
 el contador de inactividad debe seguir avanzando cuando XFCE está abierto
-pero el usuario lleva 20 minutos sin interacción. El worker identifica
+pero el usuario lleva 30 minutos sin interacción. El worker identifica
 estrictamente el cliente de esa unidad por sus argumentos locales, sin
 registrar argumentos ni contraseñas. `docker build` y contenedores ajenos
 siguen protegidos mientras su proceso cliente esté activo.

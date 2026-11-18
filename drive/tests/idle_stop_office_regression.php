@@ -98,7 +98,7 @@ try {
         $db->query('DELETE FROM OfficeSessionLeases');
         $db->query('DELETE FROM OfficeDocumentSessions');
         $db->query('DELETE FROM MediaProcessingJobs');
-        $db->query("UPDATE MediaWorkerNodeSessions SET Status='idle',IdleSince=DATE_SUB(UTC_TIMESTAMP(), INTERVAL 21 MINUTE),StopRequestedAt=NULL");
+        $db->query("UPDATE MediaWorkerNodeSessions SET Status='idle',IdleSince=DATE_SUB(UTC_TIMESTAMP(), INTERVAL 31 MINUTE),StopRequestedAt=NULL");
         Config::$calls = []; Config::$onDescribe = null; Config::$launchOverride = null;
     };
     $noStop = static fn(): bool => !in_array('StopInstances', Config::$calls, true);
@@ -314,23 +314,23 @@ try {
     $reset();
     $before = $sessions->activeForInstance('i-12345678');
     $sessions->clearIdle($before['session_id']);
-    idleCheck(!$sessions->claimIdleStop($before['session_id'], $before['idle_since'], 1230), 'atomic stop claim rejects late heartbeat');
+    idleCheck(!$sessions->claimIdleStop($before['session_id'], $before['idle_since'], 1830), 'atomic stop claim rejects late heartbeat');
     $reset();
     $before = $sessions->activeForInstance('i-12345678');
     $jobs->enqueue(2, ['id_' => 1, '_key' => 'Data2/video.mp4'], 'extract_mp3', 1, 0, 0);
-    idleCheck(!$sessions->claimIdleStop($before['session_id'], $before['idle_since'], 1230), 'atomic stop claim rejects queued work');
+    idleCheck(!$sessions->claimIdleStop($before['session_id'], $before['idle_since'], 1830), 'atomic stop claim rejects queued work');
     $reset();
     $before = $sessions->activeForInstance('i-12345678');
-    idleCheck($sessions->claimIdleStop($before['session_id'], $before['idle_since'], 1230), 'first idle stop claim succeeds');
-    idleCheck(!$sessions->claimIdleStop($before['session_id'], $before['idle_since'], 1230), 'second concurrent idle stop claim fails');
+    idleCheck($sessions->claimIdleStop($before['session_id'], $before['idle_since'], 1830), 'first idle stop claim succeeds');
+    idleCheck(!$sessions->claimIdleStop($before['session_id'], $before['idle_since'], 1830), 'second concurrent idle stop claim fails');
     $node->touchInteractiveActivity(2);
     idleCheck($sessions->activeForInstance('i-12345678')['status'] === 'stopping', 'late activity cannot resurrect an in-flight stopping session');
     $reset();
-    $db->query("UPDATE MediaWorkerNodeSessions SET IdleSince=DATE_SUB(UTC_TIMESTAMP(), INTERVAL 1210 SECOND)");
+    $db->query("UPDATE MediaWorkerNodeSessions SET IdleSince=DATE_SUB(UTC_TIMESTAMP(), INTERVAL 1810 SECOND)");
     $before = $sessions->activeForInstance('i-12345678');
-    idleCheck(!$sessions->claimIdleStop($before['session_id'], $before['idle_since'], 1230), 'automatic stop waits for complete warning interval');
+    idleCheck(!$sessions->claimIdleStop($before['session_id'], $before['idle_since'], 1830), 'automatic stop waits for complete warning interval');
     // The workstation systemd unit keeps a foreground docker run process.
-    // It must NOT freeze 20-minute idle shutdown even when XFCE is open.
+    // It must NOT freeze 30-minute idle shutdown even when XFCE is open.
     $dockerClassifier = new \ReflectionMethod(MediaWorkerNodeService::class, 'isPersistentWorkstationDockerClient');
     idleCheck($dockerClassifier->invoke(null, "/usr/bin/docker\0run\0--rm\0--name\0arcadecloud-workstation\0") === true,
         'long-lived Docker CLI of XFCE does not block inactivity');
@@ -366,7 +366,7 @@ try {
         $physical->handleIdle($jobs);
         $recovered = $sessions->activeForInstance('i-12345678');
         idleCheck($recovered !== null && $recovered['status'] === 'idle'
-            && $recovered['idle_since'] !== '', 'external boot recovers real 20-minute idle session');
+            && $recovered['idle_since'] !== '', 'external boot recovers real 30-minute idle session');
         $physical->handleIdle($jobs);
         idleCheck($sessions->activeForInstance('i-12345678')['session_id'] === $recovered['session_id'],
             'repeated idle polling does not create duplicate sessions');

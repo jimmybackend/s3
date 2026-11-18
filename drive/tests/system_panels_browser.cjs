@@ -23,7 +23,7 @@ const views = {about:render('about'), moderation:render('moderation'), ec2:rende
   const json = value=>route.fulfill({contentType:'application/json',body:JSON.stringify(value)});
   if(req.method()==='POST') posts.push({path:url.pathname,body:req.postData(),headers:req.headers()});
   if(url.pathname==='/__office_activity') {officeActivity++; return json({ok:true});}
-  if(url.pathname==='/__office_idle') return json({ok:true,idle:{state:'running',idle_elapsed_seconds:5,idle_grace_seconds:1200}});
+  if(url.pathname==='/__office_idle') return json({ok:true,idle:{state:'running',idle_elapsed_seconds:5,idle_grace_seconds:1800}});
   if(url.pathname==='/desktop-fixture') return route.fulfill({contentType:'text/html',body:'<input id="remote" autofocus><script>document.addEventListener("pointerdown",e=>e.stopPropagation());</script>'});
   if(url.pathname==='/office-fixture') return route.fulfill({contentType:'text/html',body:`<iframe id="officeFrame" src="/desktop-fixture"></iframe><div id="officeIdleWarning" hidden></div><span id="officeIdleCount"></span><button id="officeContinue"></button><div id="officeIdleStatus"></div><script>${officeScript}</script>`});
   if(url.pathname==='/federationcloud/os-admin.php') return route.fulfill({contentType:'text/html',body:views.about});

@@ -236,12 +236,12 @@ Los heartbeats se limitan a uno cada 20 segundos. Un heartbeat llama `touchInter
 Si no hay actividad:
 
 1. el worker marca la sesión como idle;
-2. se esperan al menos 1200 segundos (20 minutos);
+2. se esperan al menos 1800 segundos (30 minutos);
 3. la pestaña muestra una advertencia de 30 segundos;
 4. si no se reanuda la actividad y no existen trabajos multimedia, el mecanismo existente solicita apagar la EC2;
 5. si hay FFmpeg/multimedia activo, el apagado queda bloqueado.
 
-El umbral sigue controlado por `ARCADECLOUD_MEDIA_WORKER_IDLE_GRACE_SECONDS`, cuyo mínimo en código es 1200 segundos.
+El umbral sigue controlado por `ARCADECLOUD_MEDIA_WORKER_IDLE_GRACE_SECONDS`, cuyo mínimo en código es 1800 segundos.
 
 ## Guardado de documentos
 

@@ -76,7 +76,7 @@ Un resultado `status: ready` permite seguir. `warning` requiere revisar la adver
 - [ ] Abrir y guardar al menos DOCX, XLSX y PPTX/ODP compatibles.
 - [ ] Confirmar sincronización de vuelta a S3.
 - [ ] Abrir KDE/Guacamole y verificar que actividad real bloquea el autoapagado.
-- [ ] Dejar el nodo realmente ocioso y comprobar apagado a los 20 minutos configurados.
+- [ ] Dejar el nodo realmente ocioso y comprobar apagado a los 30 minutos configurados.
 - [ ] Verificar que el aviso previo no provoca recarga completa del OS móvil.
 
 ## Criterio de cierre

@@ -4,16 +4,16 @@
 
 ## Resumen
 
-- PHP analizados: **626**
-- PHP que ya contienen clases/interfaces: **339**
+- PHP analizados: **634**
+- PHP que ya contienen clases/interfaces: **345**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **112**
-- JavaScript analizados: **98**
-- JavaScript que ya contienen clases: **89**
+- Tests PHP separados del objetivo OOP de runtime: **113**
+- JavaScript analizados: **99**
+- JavaScript que ya contienen clases: **90**
 - JavaScript runtime marcados para migración/revisión: **1**
 - Tests JavaScript separados del objetivo OOP de runtime: **13**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
-- Clientes AJAX detectados: **61** módulos / **128** llamadas
+- Clientes AJAX detectados: **62** módulos / **130** llamadas
 - JSON analizados: **10**; inválidos: **0**
 
 ## Criterio
@@ -139,6 +139,7 @@
 | `drive/federationdrop/index.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/folder-suggestions.php` | 41 | thin endpoint | 0 | — | — | — | — |
 | `drive/generar_token.php` | 10 | thin endpoint | 0 | — | — | — | — |
+| `drive/generate_folder_detail.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/guardar_texto.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/image-rotate.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/index.php` | 559 | view/entrypoint | 0 | — | — | — | — |
@@ -185,7 +186,7 @@
 | `drive/setup/index.php` | 90 | view/entrypoint | 0 | — | — | — | — |
 | `drive/so.php` | 2373 | view/entrypoint | 0 | — | — | — | — |
 | `drive/src/Activity/AccountingProfile.php` | 35 | class/module | 1 | — | — | — | — |
-| `drive/src/Activity/ActivityCostRecorder.php` | 155 | class/module | 1 | — | — | — | — |
+| `drive/src/Activity/ActivityCostRecorder.php` | 158 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRepository.php` | 255 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/ActivityCostService.php` | 185 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/ActivityRetentionService.php` | 129 | class/module | 1 | — | ⚠️ | — | — |
@@ -218,6 +219,7 @@
 | `drive/src/Application/FileListService.php` | 194 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/FileMutationService.php` | 210 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/FileSearchService.php` | 159 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Application/FolderDetailCatalogService.php` | 258 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/FolderDocumentService.php` | 324 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/FolderMutationService.php` | 363 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/FolderQueryService.php` | 224 | class/module | 1 | — | — | — | — |
@@ -252,6 +254,9 @@
 | `drive/src/Aws/TextractFileService.php` | 107 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/TranscriptionFileService.php` | 712 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/TranslateFileService.php` | 60 | class/module | 1 | — | — | — | — |
+| `drive/src/Book/BookAiLayoutService.php` | 49 | class/module | 1 | — | — | — | — |
+| `drive/src/Book/BookLayout.php` | 33 | class/module | 1 | — | — | — | — |
+| `drive/src/Book/BookLayoutStore.php` | 56 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/ActivityRetentionCommand.php` | 38 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/FolderTextractWorkerCommand.php` | 130 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/MediaProcessingWorkerCommand.php` | 919 | class/module | 1 | — | — | — | — |
@@ -369,6 +374,7 @@
 | `drive/src/Http/Controller/FileMutationController.php` | 128 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FileSearchController.php` | 107 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FileSecurityController.php` | 100 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/FolderDetailCatalogController.php` | 34 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FolderDocumentController.php` | 73 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FolderMutationController.php` | 207 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FolderQueryController.php` | 30 | class/module | 1 | — | — | — | — |
@@ -385,7 +391,7 @@
 | `drive/src/Http/Controller/OfficeDocumentController.php` | 53 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Http/Controller/PersonalAwsController.php` | 110 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/PollyTaskController.php` | 347 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Http/Controller/PublicShareController.php` | 218 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/PublicShareController.php` | 262 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/PublicSharedBrowserController.php` | 76 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/PublicUploadController.php` | 81 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/ServerConsoleController.php` | 72 | class/module | 1 | — | — | — | — |
@@ -489,9 +495,10 @@
 | `drive/src/Upload/UploadCleanupService.php` | 294 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Upload/UploadTaskReconciler.php` | 78 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Upload/UploadTaskStore.php` | 212 | class/module | 1 | — | — | — | — |
-| `drive/src/View/ActivityCostPageRenderer.php` | 560 | class/module | 1 | — | — | — | — |
+| `drive/src/View/ActivityCostPageRenderer.php` | 562 | class/module | 1 | — | — | — | — |
 | `drive/src/View/Drive3dActionContextView.php` | 45 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/View/Ec2PanelHelper.php` | 69 | class/module | 1 | — | — | — | — |
+| `drive/src/View/ExtractedTextReader.php` | 23 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FederationDropPageRenderer.php` | 228 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FederationModerationPageRenderer.php` | 73 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FederationOsAdminRenderer.php` | 200 | class/module | 1 | — | — | — | — |
@@ -503,7 +510,7 @@
 | `drive/src/View/FolderTreeRenderer.php` | 143 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/View/PersonalAwsPageRenderer.php` | 169 | class/module | 1 | — | — | — | — |
 | `drive/src/View/PublicSharedPageRenderer.php` | 104 | class/module | 1 | — | — | — | — |
-| `drive/src/View/SharePageRenderer.php` | 151 | class/module | 1 | — | — | — | — |
+| `drive/src/View/SharePageRenderer.php` | 180 | class/module | 1 | — | — | — | — |
 | `drive/src/View/SyncStatusRenderer.php` | 14 | class/module | 1 | — | — | — | — |
 | `drive/src/View/TranscriptReader.php` | 63 | class/module | 1 | — | — | — | — |
 | `drive/src/View/UserIdentityPresenter.php` | 71 | class/module | 1 | — | — | — | — |
@@ -519,6 +526,7 @@
 | `drive/tests/arcadelink_bulk_contract_regression.php` | 71 | test script | 0 | — | — | — | — |
 | `drive/tests/arcadelink_collection_regression.php` | 63 | test script | 0 | — | — | — | — |
 | `drive/tests/aws_cost_attribution_safety_smoke.php` | 26 | test script | 0 | — | — | — | — |
+| `drive/tests/book_ai_layout.php` | 39 | test script | 0 | — | — | — | — |
 | `drive/tests/catalog_folder_paths_regression.php` | 63 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/chunked_upload_cleanup_regression.php` | 117 | test script | 1 | — | — | — | — |
 | `drive/tests/compute_admission_lock_contract_smoke.php` | 33 | test script | 0 | — | — | — | — |
@@ -598,7 +606,7 @@
 | `drive/tests/setup_bootstrap_smoke.php` | 61 | test script | 0 | — | — | — | — |
 | `drive/tests/setup_entry_guard_smoke.php` | 38 | test script | 0 | — | — | — | — |
 | `drive/tests/setup_finalize_contract_smoke.php` | 75 | test script | 0 | — | — | — | — |
-| `drive/tests/shared_transcript_reader.php` | 31 | test script | 0 | — | — | — | — |
+| `drive/tests/shared_transcript_reader.php` | 49 | test script | 0 | — | — | — | — |
 | `drive/tests/smtp_config_smoke.php` | 49 | test script | 0 | — | — | — | — |
 | `drive/tests/storage_object_name_codec_regression.php` | 77 | test script | 0 | — | — | — | — |
 | `drive/tests/sync_repository_regression.php` | 91 | test script | 0 | — | ⚠️ | — | — |
@@ -672,6 +680,7 @@
 | `drive/js/aws-comprehend.js` | 355 | class/module | AwsComprehendModule, AwsFileActionRouter | — | — | — |
 | `drive/js/background-task-feedback.js` | 180 | class/module | BackgroundTaskFeedbackModule | — | — | — |
 | `drive/js/background-tasks.js` | 1467 | class/module | BackgroundTaskCenter | — | — | — |
+| `drive/js/book-ai-formatter.js` | 106 | class/module | BookAiFormatter | — | — | — |
 | `drive/js/carpetas.js` | 1208 | class/module | CarpetasModule | — | actualizarBloqueCarpetas | window functions: actualizarBloqueCarpetas |
 | `drive/js/compute-node-idle.js` | 290 | class/module | ArcadeCloudComputeIdleGuard | — | — | — |
 | `drive/js/dataword3d.js` | 2107 | class/module | ArcadeCloudDrive3D | — | — | — |
@@ -719,14 +728,14 @@
 | `drive/js/recargarPagina.js` | 27 | class/module | RecargarPaginaModule | — | — | — |
 | `drive/js/server-admin.js` | 415 | class/module | ServerAdminModule | — | — | — |
 | `drive/js/setup.js` | 192 | class/module | ArcadeCloudSetup | — | — | — |
-| `drive/js/share-reader.js` | 63 | class/module | SharedTextReader | — | — | — |
+| `drive/js/share-reader.js` | 188 | class/module | SharedTextReader | — | — | — |
 | `drive/js/sincronizar.js` | 265 | class/module | SincronizarModule | — | triggerSyncFolderS3, triggerSyncS3 | window functions: triggerSyncFolderS3, triggerSyncS3 |
 | `drive/js/so-appearance.js` | 168 | class/module | ArcadeCloudOsAppearance | — | — | — |
 | `drive/js/so-clipboard.js` | 927 | class/module | ArcadeCloudOsClipboard | — | — | — |
 | `drive/js/so-device-location.js` | 51 | class/module | ArcadeCloudDeviceLocation | — | — | — |
 | `drive/js/so-federation.js` | 102 | class/module | ArcadeCloudOsFederationApp | — | — | — |
 | `drive/js/so-folder-recorder.js` | 496 | class/module | ArcadeCloudFolderRecorder | — | — | — |
-| `drive/js/so-folders.js` | 607 | class/module | ArcadeCloudOsFolderActions | — | — | — |
+| `drive/js/so-folders.js` | 705 | class/module | ArcadeCloudOsFolderActions | — | — | — |
 | `drive/js/so-new-text-file.js` | 129 | class/module | ArcadeCloudEmptyTextFileCreator | — | — | — |
 | `drive/js/so-node.js` | 563 | class/module | ArcadeCloudOsNodeMonitor | — | — | — |
 | `drive/js/so-power.js` | 108 | class/module | ArcadeCloudFastDrivePower | — | — | — |
@@ -772,6 +781,7 @@
 | `drive/js/audiovideo.js` | 1 | 0 | 0 | 1 | 0 |
 | `drive/js/aws-comprehend.js` | 1 | 0 | 0 | 0 | 3 |
 | `drive/js/background-tasks.js` | 2 | 0 | 0 | 0 | 20 |
+| `drive/js/book-ai-formatter.js` | 1 | 0 | 0 | 1 | 2 |
 | `drive/js/carpetas.js` | 2 | 0 | 0 | 2 | 11 |
 | `drive/js/compute-node-idle.js` | 3 | 0 | 0 | 3 | 6 |
 | `drive/js/dataword3d.js` | 5 | 0 | 0 | 3 | 10 |
@@ -809,7 +819,7 @@
 | `drive/js/so-appearance.js` | 1 | 0 | 0 | 0 | 0 |
 | `drive/js/so-clipboard.js` | 1 | 0 | 0 | 1 | 2 |
 | `drive/js/so-federation.js` | 2 | 0 | 0 | 0 | 5 |
-| `drive/js/so-folders.js` | 1 | 0 | 0 | 1 | 3 |
+| `drive/js/so-folders.js` | 2 | 0 | 0 | 2 | 5 |
 | `drive/js/so-new-text-file.js` | 1 | 0 | 0 | 1 | 2 |
 | `drive/js/so-node.js` | 5 | 0 | 0 | 5 | 10 |
 | `drive/js/so-power.js` | 1 | 0 | 0 | 1 | 2 |

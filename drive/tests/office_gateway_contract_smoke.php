@@ -95,7 +95,7 @@ officeGatewayContract(
     str_contains($gateway, "['pointerdown','pointermove','keydown','touchstart','wheel']")
     && str_contains($gateway, '/__office_activity')
     && str_contains($gateway, '/__office_idle')
-    && str_contains($gateway, 'Han pasado 20 minutos sin actividad'),
+    && str_contains($gateway, 'Han pasado 30 minutos sin actividad'),
     'pestaña Office detecta interacción real y muestra aviso de inactividad'
 );
 
@@ -333,10 +333,10 @@ officeGatewayContract(
 
 officeGatewayContract(
     str_contains($node, 'max(')
-    && str_contains($node, '1200')
+    && str_contains($node, '1800')
     && str_contains($node, 'ARCADECLOUD_MEDIA_WORKER_IDLE_GRACE_SECONDS')
     && str_contains($node, 'hasActiveJobs()'),
-    'autoapagado existente conserva mínimo de 20 minutos y protege trabajos multimedia'
+    'autoapagado existente conserva mínimo de 30 minutos y protege trabajos multimedia'
 );
 
 officeGatewayContract(
